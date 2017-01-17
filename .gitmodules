@@ -1,0 +1,4 @@
+[submodule "public"]
+	path = public
+	url = https://github.com/kodykantor/kodykantor.github.io.git
+	branch = master
