@@ -1,0 +1,4 @@
+baseUrl="https://kodykantor.github.io/"
+languageCode = "en-us"
+title = "A Bird in the Hand"
+theme = "hugo-theme-bootstrap4-blog"
