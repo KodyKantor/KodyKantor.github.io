@@ -2,7 +2,7 @@
 categories = ["software","idioms"]
 author = "Kody Kantor"
 date = "2017-01-16T17:19:11-06:00"
-title = "Worth Two in the Bush"
+title = "worth two in the bush"
 description = "A tale of running code and technology hipsters"
 +++
 
@@ -63,7 +63,7 @@ learning' without fully understanding the implications of doing such a thing
 So what does that mean in the context of our idiom? This:
 
 **'A bird in the hand is worth two in the bush' == 'Running code speaks louder
-**than words'**
+than words'**
 
 The bird is the running code, and the two in the bush is the words.
 
@@ -89,3 +89,5 @@ This blog will be my dumping ground for things that I've been thinking. This is
 where I can be a technology hipster. I'll write about a cool idea I have, and
 maybe talk about running code from time to time. This is a magical place where
 you can hear about birds in the hand, and those in the bush.
+
+edit: fixed a formatting issue
