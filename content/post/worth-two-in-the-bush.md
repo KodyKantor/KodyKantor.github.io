@@ -52,7 +52,7 @@ As you can see from that math, a TON of ideas are sitting in the heads of
 engineers all the time. The best engineers are the ones who recognize when their
 idea is good, flesh out their idea, and write the code. The technology hipsters
 are the ones who have good ideas (just like the rest of us) but never intend to
-execute. Technology hipsters are unfortunately very popular at tradition
+execute. Technology hipsters are unfortunately very popular at traditional
 top-down companies. These hipsters appeal to higher-ups with their knowledge of
 buzz words, and willingness to lead whatever initiative would be spun up to take
 on development of such an idea. Technology hipsters tend to trivialize problems

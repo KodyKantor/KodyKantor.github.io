@@ -114,7 +114,7 @@ filesystem (the `/containers` namespace) would have to be overwritten because
 
 All of this is accomplished using the [Docker Remote
 API](https://docs.docker.com/engine/reference/api/docker_remote_api/). The code
-is on [GitHub](https://github.com/kodykantor/`dockerbox`). The bottom of the
+is on [GitHub](https://github.com/kodykantor/dockerbox). The bottom of the
 README has a few other pie in the sky things as well. If it sounds interesting,
 definitely check it out! It is definitely not good code, since it was hacked
 together for a hackathon.
