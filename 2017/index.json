@@ -1,0 +1,25 @@
+{
+    "entries": [
+        {
+            "type": 0,
+            "display": "Worth Two in the Bush",
+            "selector": "TwoInBush",
+            "server": "blog.kkantor.com",
+            "port": 70
+        },
+        {
+            "type": 0,
+            "display": "Dockerbox - Virtual Filesystem",
+            "selector": "Dockerbox",
+            "server": "blog.kkantor.com",
+            "port": 70
+        },
+        {
+            "type": 0,
+            "display": "Android Checkpoint/Restore",
+            "selector": "AndroidCR",
+            "server": "blog.kkantor.com",
+            "port": 70
+        }
+    ]
+}

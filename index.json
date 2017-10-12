@@ -1,0 +1,18 @@
+{
+    "entries": [
+        {
+            "type": 0,
+            "display": "Welcome",
+            "selector": "Welcome",
+            "server": "blog.kkantor.com",
+            "port": 70
+        },
+        {
+            "type": 1,
+            "display": "2017",
+            "selector": "2017/",
+            "server": "blog.kkantor.com",
+            "port": 70
+        }
+    ]
+}

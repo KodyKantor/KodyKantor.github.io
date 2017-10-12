@@ -1,9 +1,7 @@
-+++
-date = "2017-01-17T15:46:05-06:00"
-title = "dockerbox - the virtual container filesystem"
-categories = ["software","containers"]
-description = "Explanation of goals behind 'dockerbox' project on GitHub"
-+++
+title: "Dockerbox - Virtual Filesystem"
+description: "Explanation of goals behind 'dockerbox' project"
+date: "2017-01-17T15:46:05-06:00"
+categories: ["software","containers"]
 
 One of my favorite recent projects is my `dockerbox` project. `dockerbox` was a
 fun little idea I had after having messed around with Docker for the last couple
@@ -48,8 +46,8 @@ being suggested, `/proc` may be going back to resemble its [original
 form](http://lucasvr.gobolinux.org/etc/Killian84-Procfs-USENIX.pdf)!
 
 `dockerbox` aims to provide similar functionality for containers. So like `/proc`
-but for container filesystems. If I were running `dockerbox` on a machine, I could
-do something like this:
+but for container filesystems. If I were running `dockerbox` on a machine, I
+could do something like this:
 
 ```
 $ ls /containers
