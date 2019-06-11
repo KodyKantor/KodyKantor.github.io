@@ -143,3 +143,66 @@ past) and this relation on disk is about 12GB:
 -rw------- 1 postgres root 1.0G Mar 18 20:09 /manatee/pg/data/base/16385/74462.7
 -rw------- 1 postgres root 1.0G Mar 18 20:32 /manatee/pg/data/base/16385/74462.8
 -rw------- 1 postgres root 1.0G Mar 18 19:39 /manatee/pg/data/base/16385/74462.9
+
+--- June update ---
+It appears that I was on to something deeper here. I was looking at another
+system during a recent trip to Korea and noticed that there were some queries
+blocking on the WALWriteLock. The WALWriteLock is infamous for being on the
+scene during Postgres performance issues. It needs to be acquired whenever a
+record is inserted into the WAL. IIUC this happens whenever a transaction
+modifies table data.
+
+I took a statemap (https://github.com/joyent/statemap) of the system I was
+looking at. These are the things I observed:
+- Multiple processes blocking on locks (presumably WALWriteLock)
+- A few processes spending _way_ too much time in zil_commit
+
+I then used DTrace to track zil_commit latencies, and the results were damning.
+Some zil_commits were taking over 200ms! Since zil_commit is how ZFS implements
+fsync it's no wonder things were performing pathologically.
+
+My coworker Jerry was able to pretty quickly determine that the zil_commit ZIOs
+were getting delayed in the ZIO pipeline, which was causing much of the latency.
+
+I also wrote a complicated DTrace script (and found a DTrace bug on the way!)
+to track where ZIOs are spending time in the ZIO pipeline:
+https://github.com/KodyKantor/kodyops/blob/master/illumos/dtrace/zio.d
+It's a riff on an 'extended' DTrace script that George Wilson presented at
+the 2018 OpenZFS Summit. My version is a little more complicated, since it only
+prints pipelines that are over a given time threshold (in your time unit of
+choice) and also calculates time the ZIO spent waiting (not being executed).
+
+The result of running my zio.d script is this:
+
+	[65532ns] zil_lwb_write_issue
+	[20317ns] zio_write_bp_init
+	[27606ns] wait
+	[15031ns] zio_issue_async
+	[16879ns] wait
+	[11901ns] zio_write_compress
+	[11568ns] wait
+	[13422ns] zio_checksum_generate
+	[12041ns] wait
+	[10437ns] zio_ready
+	[11355ns] wait
+	[27992ns] zio_vdev_io_start
+	[25709ns] wait
+	[9557ns] zio_vdev_io_done
+	[314426ns] wait
+	[13820ns] zio_vdev_io_done
+	[8677ns] wait
+	[18070ns] zio_vdev_io_assess
+	[17351ns] wait
+	[81714ns] zio_done
+	[10576ns] wait
+	[743981ns] DTrace calculated duration
+	[664521ns] ZIO reported duration
+
+Pretty useful!
+
+In the end we discovered that the ZFS bug we were encountering had been fixed
+a few months ago (illumos#9993 fixed in Nov 2018), which was caused by commit
+llumos#19097 - zfs i/o scheduler needs some work. Funny enough, the day we
+discovered this bug was hurting us was the six year anniversary of the bug
+being introduced! It was introduced about a week before my brother graduated
+from college. Nice!
