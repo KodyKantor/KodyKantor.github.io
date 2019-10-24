@@ -26,8 +26,18 @@ Then he looked at me and said, "Like you! Do you have a backup plan?" To which
 I replied, "Nope!"
 
 So here we are. Although I did pass the class, maybe I didn't learn how to solve
-problems the right way... After all, this is a Gopher server. There are many
-'better' ways to host a blog nowadays. But for me, this is fine. It's probably
-better that nobody sees my ramblings anyways :-).
+problems the right way... There are many 'better' ways to host a blog nowadays.
+But for me, this is fine. It's probably better that nobody sees my ramblings
+anyways :-).
+
+Feel free to GET these pages off of the root path:
+
+/2019/hw_raid_eating_data
+/2019/pg_temp_files
+/2019/zfs_recordsize
+/2018/pg_xlogdump
+/2017/android_cr
+/2017/two_in_bush
+/2017/dockerbox
 
 Kody
