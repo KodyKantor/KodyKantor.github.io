@@ -1,7 +1,7 @@
-title: "pg_xlogdump(1) - a tale of 15 round trips"
-description: "useful scripts for observing systems"
-date: "2018-11-12T20:51:01-06:00"
-categories: ["software", "kodyops"]
+$!title: pg_xlogdump(1) - a tale of 15 round trips
+$!description: useful scripts for observing systems
+$!date: 2018-11-12T20:51:01-06:00
+$!categories: ["software", "kodyops"]
 
 In the last year I've been spending more time using DTrace, MDB, and other tools
 to observe and debug systems. I thought I'd write down some of the interesting
@@ -40,6 +40,7 @@ somewhat human-readable output to the console. That's a little verbose for us,
 so we'll look at a single transaction. This is an INSERT into the 'manta' table
 of a development deployment of Joyent's Manta service:
 
+```
 [root@cf90e54c (postgres) /manatee/pg/data/pg_xlog]$ pg_xlogdump 00000001000004210000007B -x 1592894815
 rmgr: Heap        len (rec/tot):      3/   751, tx: 1592894815, lsn: 421/7BFF9B60, prev 421/7BFF9A98, desc: INSERT off 1, blkref #0: rel 1663/16385/18650 blk 8455231
 rmgr: Btree       len (rec/tot):      2/   160, tx: 1592894815, lsn: 421/7BFFA1F8, prev 421/7BFF9EF0, desc: INSERT_LEAF off 28, blkref #0: rel 1663/16385/57453 blk 16791519
@@ -58,6 +59,7 @@ rmgr: Btree       len (rec/tot):      2/   128, tx: 1592894828, lsn: 421/7BFFE56
 rmgr: Btree       len (rec/tot):      2/    64, tx: 1592894828, lsn: 421/7BFFE5E0, prev 421/7BFFE560, desc: INSERT_LEAF off 196, blkref #0: rel 1663/16385/90112 blk 1614613
 rmgr: Btree       len (rec/tot):      2/    72, tx: 1592894828, lsn: 421/7BFFE620, prev 421/7BFFE5E0, desc: INSERT_LEAF off 2, blkref #0: rel 1663/16385/98305 blk 1
 rmgr: Btree       len (rec/tot):      2/    64, tx: 1592894828, lsn: 421/7BFFE668, prev 421/7BFFE620, desc: INSERT_LEAF off 292, blkref #0: rel 1663/16385/98304 blk 1614518
+```
 
 Apologies for the large paste. Anyway, this command looked at the xlog
 '00000001000004210000007B' for XID '1592894815.' The first line ('Heap') denotes
@@ -81,13 +83,16 @@ bit that I somewhat understand is 'rel' which explains what's being modified.
 
 Take the first line of the first dump:
 
+```
 rel 1663/16385/18650
+```
 
 Here 1663 represents the 'base' tablespace, 16385 is the 'moray' database, and
 18650 is the 'manta' relation.
 
 I started from the bottom:
 
+```
 moray=# select relname from pg_class where relfilenode = 18650;
  relname
 ---------
@@ -105,14 +110,17 @@ moray=# select pg_relation_filepath('manta');
 ----------------------
  base/16385/18650
 (1 row)
+```
 
 And then we can do the same for the subtransaction:
 
+```
 moray=# select relname from pg_class where relfilenode = 18641;
         relname
 ------------------------
  manta_directory_counts
 (1 row)
+```
 
 Now we know that this series of WAL records represents an INSERT into the
 'manta' table, how much data was written, in what order, and that it (correctly)

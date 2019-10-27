@@ -1,0 +1,43 @@
+body {
+	float: center;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+pre {
+	overflow-x: scroll;
+	white-space: pre-wrap;
+}
+
+.main {
+	background-color: pink;
+	display: table;
+	max-width: 1200px;
+	margin: auto;
+}
+
+.header {
+	text-align: center;
+}
+
+.content {
+	float: left;
+}
+
+.post_container {
+	background-color: lightblue;
+	width: 75%;
+}
+
+.archive_container {
+	background-color: lightgreen;
+	width: 25%;
+
+}
+
+.post {
+	padding: 80px;
+}
+
+.archive {
+	padding: 30px;
+}

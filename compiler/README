@@ -1,0 +1,7 @@
+Compiler and Linker
+-------------------
+
+There are two programs here:
+- The compiler program takes a blog post and compiles it into HTML.
+- The linker program takes the compiled HTML and integrates it into the HTML
+  templates to create a series of static web pages.

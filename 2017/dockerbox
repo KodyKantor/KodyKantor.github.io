@@ -1,7 +1,7 @@
-title: "Dockerbox - Virtual Filesystem"
-description: "Explanation of goals behind 'dockerbox' project"
-date: "2017-01-17T15:46:05-06:00"
-categories: ["software","containers"]
+$!title: Dockerbox - Virtual Filesystem
+$!description: Explanation of goals behind 'dockerbox' project
+$!date: 2017-01-17T15:46:05-06:00
+$!categories: ["software","containers"]
 
 One of my favorite recent projects is my `dockerbox` project. `dockerbox` was a
 fun little idea I had after having messed around with Docker for the last couple
