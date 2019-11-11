@@ -11,7 +11,7 @@ pre {
 .main {
 	background-color: pink;
 	display: table;
-	max-width: 1200px;
+	width: 1200px;
 	margin: auto;
 }
 
