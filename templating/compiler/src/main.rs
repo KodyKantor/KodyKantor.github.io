@@ -15,19 +15,32 @@ is meant to be copied into a template file to generate a full web page.
 ";
 
 /*
+ * Write the HTML to the output directory!
+ *
+ * This could be improved with buffered IO, but this isn't a serious application
+ * so I'm not pinching memory.
+ */
+fn output_html<'a>(outdir: &'a str, fname: &'a str, html: &'a str)
+    -> Result<(), Error> {
+
+    let path = format!("{}/{}", outdir, fname);
+    fs::write(path, html)?;
+
+    Ok(())
+}
+
+/*
  * Read the given file and convert it into HTML. The output is written to a file
  * with the same name as the input file, but in the given output directory.
  */
 fn convert_file(infile: &DirEntry) -> Result<String, Error> {
     let mut preformatting = false;
     let path = infile.path();
-    let fname = infile.file_name().into_string().unwrap();
     let mut res: String = "".to_string();
 
     for line in BufReader::new(File::open(path)?).lines() {
         let lstr = line?;
-
-        res = match lstr.get(0..2) {
+        let line = match lstr.get(0..2) {
             Some("$!") => {
                 let mut vec: Vec<&str> = lstr.split(' ').collect();
 
@@ -69,21 +82,21 @@ fn convert_file(infile: &DirEntry) -> Result<String, Error> {
             },
         };
 
+        /*
+         * Add a newline to maintain 80 cols of html for my sanity (and yours).
+         */
+        res.push_str(&format!("{}\n", &line));
     }
 
     Ok(res)
 }
 
-fn compile<'a>(indir: &'a str, outdir: &'a str) -> std::io::Result<()> {
-    match fs::read_dir(indir) {
-        Err(e) => println!("{:?}", e.kind()),
-        Ok(dirents) => for dirent in dirents {
-            /* unwrap is okay - error would be caught previously */
-            match convert_file(&dirent.unwrap()) {
-                Ok(html) => /* do something */ (),
-                Err(e) => println!("{:?}", e.kind()),
-            }
-        },
+fn compile<'a>(indir: &'a str, outdir: &'a str) -> Result<(), Error>{
+    let dirents = fs::read_dir(indir)?;
+    for dirent in dirents {
+        let file = dirent.unwrap();
+        let html = convert_file(&file)?;
+        output_html(outdir, &file.file_name().into_string().unwrap(), &html)?;
     }
     Ok(())
 }
@@ -93,7 +106,7 @@ fn usage(opts: Options) {
     println!("{}", opts.usage(&usg));
 }
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(), Error> {
     let args: Vec<String> = env::args().collect();
 
     let mut opts = Options::new();
@@ -110,11 +123,9 @@ fn main() -> std::io::Result<()> {
         usage(opts);
     }
 
-    /*
-     * Safe to unwrap here because getopts guarantees a value for reqopts.
-     */
     let indir = matches.opt_str("indir").unwrap();
     let outdir = matches.opt_str("outdir").unwrap();
 
-    compile(&indir, &outdir)
+    compile(&indir, &outdir)?;
+    Ok(())
 }
