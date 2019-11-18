@@ -1,7 +1,7 @@
-title: "Welcome"
-description: "A welcome to my blog"
-date: "2017-10-11T21:03:00-06:00"
-categories: ["software", "android"]
+$!title: "Welcome"
+$!description: "A welcome to my blog"
+$!date: "2017-10-11T21:03:00-06:00"
+$!categories: ["software", "android"]
 
 Welcome to my blog! My name is Kody Kantor. I'm a software engineer in
 Minnesota.

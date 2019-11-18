@@ -1,3 +1,7 @@
+/*
+ * Copyright 2019 Kody Kantor
+ */
+
 extern crate getopts;
 
 use std::io::prelude::*;
@@ -95,6 +99,10 @@ fn compile<'a>(indir: &'a str, outdir: &'a str) -> Result<(), Error>{
     let dirents = fs::read_dir(indir)?;
     for dirent in dirents {
         let file = dirent.unwrap();
+        if !&file.file_type()?.is_file() {
+            /* ignore symlinks and directories */
+            continue;
+        }
         let html = convert_file(&file)?;
         output_html(outdir, &file.file_name().into_string().unwrap(), &html)?;
     }
@@ -121,6 +129,7 @@ fn main() -> Result<(), Error> {
 
     if matches.opt_present("h") {
         usage(opts);
+        return Ok(())
     }
 
     let indir = matches.opt_str("indir").unwrap();
