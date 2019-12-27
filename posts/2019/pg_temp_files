@@ -64,11 +64,16 @@ pg_stat_progress_vacuum  1003    1    0    0
 ```
 
 The columns are:
+
 QUERY: the 'name' of the query. Usually this refers to the primary data source
   where pgstatsmon gets its data.
+
 LAT: cumulative latency for queries to this backend.
+
 QTIM: 1 if the query timed out.
+
 QERR: 1 if an error was returned from Postgres.
+
 NaN: 1 if the data returned was a NaN type in Javascript.
 
 Right off the bat, these queries should all finish in less than 300ms. The first
