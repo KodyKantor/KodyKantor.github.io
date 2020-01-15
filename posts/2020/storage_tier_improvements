@@ -1,0 +1,162 @@
+$!title: Manta Storage Tier Improvements
+$!date: 2020-01-15T20:11:44-06:00
+
+At Joyent we're considering changing the storage tier of Manta from being local
+storage to storage over iSCSI. One of the big questions here is how the iSCSI
+storage solution will perform in terms of latency and throughput.
+
+In order to make any conclusions about how the iSCSI storage performs, we first
+need to know how the existing local storage architecture performs. Surprisingly
+it appears that we haven't done any in-depth analysis of this in the past.
+
+fio is a great tool for synthetic benchmarks. Unfortunately fio can't be used
+for a lot of system level performance testing. fio is really just a filesystem
+and block storage benchmarking tool. There's a lot more code between Manta and
+ZFS (and the disks) that fio can't test.
+
+We wrote a tool called 'chum' to test our storage performance. Chum is an
+nginx (or really any similar web server) client. It speaks to the WebDAV
+endpoint present in Manta's nginx installations. Chum is written in Rust. It
+uses operating system threads (not green threads) to generate PUT and GET
+request load.
+
+Chum is the storage-tier equivalent to mdshovel, which was written to simulate
+production workloads against the metadata tier without involving many
+components.
+
+First, we don't use green threads because there's no point. IMO green threads
+really only serve a purpose in 'web scale' applications. If you need to solve
+the 10k client problem, feel free to use green threads. I can't think of another
+reason why green threads are necessary. I didn't want to bloat chum by bringing
+in a green thread library. In fact, we were initially using a green thread
+library (reqwest) to perform HTTP requests, but we had a bunch of mysterious
+problems with it crashing while doing small uploads (1-2KB and less). I never
+did root cause this. Once I realized that reqwest used green threads we
+switched to using the libcurl binding instead, which is much more
+straightforward and simple. This all decreases cognitive load.
+
+--- Problems found in chum ---
+
+Measuring performance is hard to get right. It's easy to start a benchmark
+and then forget about it until results pop out. It's much harder to start a
+benchmark and make sure that it is measuring what you think it's measuring.
+
+We had a few instances where we had problems in chum that lead to us measuring
+chum's performance (to some extent) instead of the system under test. The
+first was in this commit: https://github.com/joyent/manta-chum/commit/a99da1e1d
+
+We discovered that chum was spending a _lot_ of time reading from /dev/urandom!
+Everybody probably knew this was going to be slow except for me. Luckily with
+the help of DTrace we were able to see that chum was spending the majority of
+its time just reading random data from /dev/urandom.
+
+Instead, we pre-created a buffer of random data and kept it in memory. We used
+a global random buffer to hopefully reduce memory consumption. This was the next
+problem! We ended up with a decent amount of lock contention when the many
+threads were trying to acquire the buffer. We resolved this in this commit:
+https://github.com/joyent/manta-chum/commit/56bb05a1f by creating a random
+buffer per-thread. This isn't really any worse for memory usage than the
+original read-from-urandom case since the data read from urandom would have been
+kept in memory for a little while anyway (before being freed and then
+reallocated, which is much worse).
+
+Then later we added some tabular output for chum statistics so we could draw
+some graphs of the client-side performance over time. This was all well and good
+until we discovered that we made a big mistake in how we were processing
+latency in the plots. The gist of the problem is that we were interpreting
+the first-byte and round-trip latency numbers as being reported as an average,
+and then for some reason we divided the number by 1000 (my mind must have been
+in Javascript land). We fixed this in this commit:
+https://github.com/joyent/manta-chum/commit/717309d6a. Up until we fixed
+graphing bug it appeared that latency was always _extremely_ flat while
+throughput was jumping all over the place.
+
+--- Problems found in the storage tier ---
+
+While developing chum and running baseline tests we discovered a number of huge
+performance problems when our storage tier is under heavy load. Luckily our
+production storage tier(s) are very very rarely under the heavy load that we're
+simulating with chum.
+
+1) nginx was configured to write in 8k blocks. This generated an enormous
+amount of garbage that ZFS had to wade through every time an fsync was
+triggered. We discovered this when we noticed that zil_commit was slow simply
+because it had to iterate through a MASSIVE list of itx_ts. DTrace to the
+rescue once again. We did some more measuring and determined that for our
+workload a 128k nginx block size makes more sense. This is different than the
+filesystem's 'recordsize' tunable, which I've written about previously. This is
+MANTA-4816.
+
+2) fsync on the main thread was slowing down all requests. We noticed that
+first-byte latency was really bad under heavy load. This doesn't make sense,
+because first-byte latency should really mostly just measure the time it takes
+for nginx to accept a connection (we keep connections alive) and send a header
+to the client. It turns out that Joyent's modification of nginx to run an fsync
+when a file is done being uploaded is the culprit. nginx has an eventloop
+architecture, so when something is slow (like fsync), it blocks anything else
+from running on that worker. We were able to quickly implement the ability to
+send the two fsync operations to a thread pool. This almost entirely eliminated
+first-byte latency and drastically improved throughput. This is MANTA-4863.
+
+3) eventports does not behave as documented, or is documented poorly. For a long
+time something that has bothered me is that our nginx workers do not have an
+even load distribution. One worker may be working very hard and 13 others may be
+almost completely idle. This is especially bad when we consider problems 1) and
+2). We stumbled across a blog post from Cloudflare
+(https://blog.cloudflare.com/the-sad-state-of-linux-socket-balancing/) where
+an engineer discusses a similar problem they discovered. Their issue turned out
+to be due to intricacies in Linux socket types and flags. Luckily the eventports
+queueing code in illumos is very simple to understand. After briefly looking
+at the code it was apparent that eventports will queue waiters waiting on the
+_same_ number of events as other workers in the front of the queue instead of
+the back as I would expect. Technically it's not documented what will happen
+when two waiters are waiting on the same number of events. This behavior leads
+to the possibility of one waiter receiving all events. This was more of an
+academic experiment. We didn't correlate this with an nginx performance problem.
+It's easy to fix this, and can mostly be done with a single-line kernel
+hotpatch. The mystery of why load is not balanced between nginx workers remains!
+This is OS-8070.
+
+4) keepalives are disabled in production. Due to a three-year old (fixed) bug
+where nginx and muskie were both leaking connections, we had disabled HTTP
+keepalives in production. Three years later we never remembered to turn them
+back on. We discovered this while setting up our iSCSI baseline test machine.
+We were trying to match the settings to production and noticed this problem.
+QA did some testing and found that enabling keepalives reduced first-byte
+latency by ~10%.
+
+5) nginx worker process load balancing is broken by default. We finally found
+the root cause of this issue! It turns out that load balancing across nginx
+workers has been broken for a long time. We were trying to understand how
+load is spread between workers and why our solution to 3) was not fixing the
+problem. It turns out the problem appears before eventports is even given a
+chance to be broken. nginx has a tunable called accept_mutex. On our version
+of nginx it defaults to 'on.' It is documented here:
+http://nginx.org/en/docs/ngx_core_module.html#accept_mutex. The behavior here
+appears to be poor. There exists a global accept mutex that workers need to
+acquire before they can accept a connection. If a worker fails to acquire the
+mutex, it sleeps for 500ms (by default) and then tries again. If a worker 
+acquires the mutex, it accepts a connection, AND it doesn't have to wait before
+trying to acquire the mutex again! This means that the thread that acquires the
+mutex has an advantage to acquire the mutex again for the next ~500ms! Crazy! We
+could observe this poor behavior simply by seeing how many times each worker
+was attempting to grab the mutex. It was very unbalanced. We can simply set this
+to 'off' and forget that this ever happened. This behavior is off by default in
+new nginx versions. This is MANTA-4967.
+
+--- Conclusions ---
+
+By making all of these changes we were able to approximately double storage tier
+throughput, effectively eliminate first-byte latency, and drastically reduce
+round-trip time while under high load. All of this was done with just a few
+'tunable' changes and spending a day making sure fsync doesn't happen on the
+main thread.
+
+This was very fun and it felt like I was making a difference. We haven't even
+gotten to testing iSCSI performance yet. Hopefully there is more low-hanging
+fruit.
+
+Lessons we learned:
+1) benchmarking software is hard to get right
+2) understand how the software you're using works (all of it)
+3) keep dependencies (nginx) up to date
