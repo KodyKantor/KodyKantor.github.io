@@ -98,7 +98,7 @@ fn main() -> Result<(), Error> {
                 "template must be a file"))
         }
 
-        let outpath = format!("{}/{}.html", outdir,
+        let outpath = format!("{}/{}", outdir,
             &file.file_name().into_string().unwrap());
         match merge_template_and_html(&parsed, File::open(&file.path())?,
             &outpath) {

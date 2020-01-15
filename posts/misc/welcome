@@ -27,20 +27,25 @@ problems the right way... There are many 'better' ways to host a blog nowadays.
 But for me, this is fine. It's probably better that nobody sees my ramblings
 anyways :-).
 
-Feel free to GET these pages off of the root path:
+Here's a listing of what you can find:
 
-/2019/hw_raid_eating_data.html
+<a href="https://blog.kkantor.com/2020/storage_tier_improvements">manta storage tier improvements</a>
 
-/2019/pg_temp_files.html
+<a href="https://blog.kkantor.com/2019/hw_raid_eating_data">hardware raid is eating your data</a>
 
-/2019/zfs_recordsize.html
+<a href="https://blog.kkantor.com/2019/pg_temp_files">postgres temp files (out of date)</a>
 
-/2018/pg_xlogdump.html
+<a href="https://blog.kkantor.com/2019/zfs_recordsize">zfs recordsize (out of date, incorrect)</a>
 
-/2017/android_cr.html
+<a href="https://blog.kkantor.com/2018/pg_xlogdump">pg_xlogdump(1) - a tale of 15 round trips</a>
 
-/2017/two_in_bush.html
+<a href="https://blog.kkantor.com/2017/android_cr">android checkpoint/restore</a>
 
-/2017/dockerbox.html
+<a href="https://blog.kkantor.com/2017/two_in_bush">worth two in the bush</a>
+
+<a href="https://blog.kkantor.com/2017/dockerbox">dockerbox - virtual filesystem</a>
+
+Note that this whole site is intentionally light on Javascript (there should be
+none) and HTML. It's just not necessary to be showy when serving static files.
 
 Kody
