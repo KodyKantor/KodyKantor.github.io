@@ -11,7 +11,7 @@ pre {
 
 .main {
 	display: table;
-	width: 1200px;
+	width: 800px;
 	margin: auto;
 }
 
@@ -19,23 +19,10 @@ pre {
 	text-align: center;
 }
 
-.content {
-	float: left;
-}
-
-.post_container {
-	width: 75%;
-}
-
-.archive_container {
-	width: 25%;
-
-}
-
 .post {
-	padding: 80px;
+	padding: 40px;
 }
 
-.archive {
-	padding: 30px;
+h3 {
+	text-align: center;
 }

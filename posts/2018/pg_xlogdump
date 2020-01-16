@@ -1,46 +1,74 @@
-$!title: pg_xlogdump(1) - a tale of 15 round trips
-$!description: useful scripts for observing systems
-$!date: 2018-11-12T20:51:01-06:00
-$!categories: ["software", "kodyops"]
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="template.css">
+<title>Kody's Blog</title>
+</head>
 
+<body>
+
+<div class="main"> <!-- main block -->
+
+<div class="header">
+<a href="https://blog.kkantor.com/">Home</a>
+<h1>Kody's Blog</h1>
+
+<h2>pg_xlogdump(1) - a tale of 15 round trips</h2>
+<h5>2018-11-12</h5>
+</div> <!-- header -->
+
+<div class="post">
+<p>
 In the last year I've been spending more time using DTrace, MDB, and other tools
 to observe and debug systems. I thought I'd write down some of the interesting
 things I've written or discovered.
+</p>
 
---- Exploring Postgres ---
+<h4>Exploring Postgres</h4>
 
+<p>
 pg_xlogdump (pg_waldump for those of us in the PG 10+ future - not me) is a
 really powerful tool that dumps out the contents of the Postgres write ahead log
 files. This can be used for all sorts of data wrangling, although from my
 limited time with the tool I didn't see any directly machine-parseable output.
+</p>
 
-pg_xlogdump was added in PG 9.3 (https://paquier.xyz/postgresql-2/postgres-9-3-feature-highlight-pg_xlogdump/)
-as a 'contrib' add-on. Before this there were a few things floating around that
-had similar functionality but they were maintained outside of Postgres.
+<p>
+pg_xlogdump was
+<a href="https://paquier.xyz/postgresql-2/postgres-9-3-feature-highlight-pg_xlogdump/">added</a>
+in PG 9.3 as a 'contrib' add-on. Before this there were a few things floating
+around that had similar functionality but they were maintained outside of
+Postgres.
+</p>
 
+<p>
 Renaming pg_xlogdump to pg_waldump was done with a slew of other renames in PG
 10. Why would that be? Because people were deleting directories in the PG
 portion of their filesystem that had the word 'log' in them (why is this log
 stuff taking all of my IOPS?!?! - famous last words of a frustrated sysadmin).
 Some background on these changes are here:
-original post: https://www.postgresql.org/message-id/flat/CAASwCXcVGma9KgEu-ESC6u928mW67noZvnawbPUSW7R7AN9UVg%40mail.gmail.com
-implementation discussion: https://www.postgresql.org/message-id/flat/CAB7nPqTeC-8%2Bzux8_-4ZD46V7YPwooeFxgndfsq5Rg8ibLVm1A%40mail.gmail.com
+<a href="https://www.postgresql.org/message-id/flat/CAASwCXcVGma9KgEu-ESC6u928mW67noZvnawbPUSW7R7AN9UVg%40mail.gmail.com">original post</a>,
+<a href="https://www.postgresql.org/message-id/flat/CAB7nPqTeC-8%2Bzux8_-4ZD46V7YPwooeFxgndfsq5Rg8ibLVm1A%40mail.gmail.com">implementation discussion.</a> 
+Here's a <a href="https://wiki.postgresql.org/wiki/New_in_postgres_10#Renaming_of_.22xlog.22_to_.22wal.22_Globally_.28and_location.2Flsn.29">summary</a> of changes. 
+</p>
 
-Here's a summary of changes: https://wiki.postgresql.org/wiki/New_in_postgres_10#Renaming_of_.22xlog.22_to_.22wal.22_Globally_.28and_location.2Flsn.29
-
+<p>
 So the skinny of it is that people were deleting anything in the Postgres data
 directories that had the word 'log' in them. This was probably an uninformed
 decision on the part of the operator(s), but Michael Paquier did point out that
 the original names of things weren't very indicative of what their function was
 (e.g. pg_xlog isn't as self-explanatory as pg_wal).
+</p>
 
+<p>
 Anyway, a tool like pg_xlogdump is most interesting with an example.
 The pg_xlogdump tool can be given the name of a WAL file and it will dump
 somewhat human-readable output to the console. That's a little verbose for us,
 so we'll look at a single transaction. This is an INSERT into the 'manta' table
 of a development deployment of Joyent's Manta service:
+</p>
 
-```
+<pre>
 [root@cf90e54c (postgres) /manatee/pg/data/pg_xlog]$ pg_xlogdump 00000001000004210000007B -x 1592894815
 rmgr: Heap        len (rec/tot):      3/   751, tx: 1592894815, lsn: 421/7BFF9B60, prev 421/7BFF9A98, desc: INSERT off 1, blkref #0: rel 1663/16385/18650 blk 8455231
 rmgr: Btree       len (rec/tot):      2/   160, tx: 1592894815, lsn: 421/7BFFA1F8, prev 421/7BFF9EF0, desc: INSERT_LEAF off 28, blkref #0: rel 1663/16385/57453 blk 16791519
@@ -59,14 +87,17 @@ rmgr: Btree       len (rec/tot):      2/   128, tx: 1592894828, lsn: 421/7BFFE56
 rmgr: Btree       len (rec/tot):      2/    64, tx: 1592894828, lsn: 421/7BFFE5E0, prev 421/7BFFE560, desc: INSERT_LEAF off 196, blkref #0: rel 1663/16385/90112 blk 1614613
 rmgr: Btree       len (rec/tot):      2/    72, tx: 1592894828, lsn: 421/7BFFE620, prev 421/7BFFE5E0, desc: INSERT_LEAF off 2, blkref #0: rel 1663/16385/98305 blk 1
 rmgr: Btree       len (rec/tot):      2/    64, tx: 1592894828, lsn: 421/7BFFE668, prev 421/7BFFE620, desc: INSERT_LEAF off 292, blkref #0: rel 1663/16385/98304 blk 1614518
-```
+</pre>
 
+<p>
 Apologies for the large paste. Anyway, this command looked at the xlog
 '00000001000004210000007B' for XID '1592894815.' The first line ('Heap') denotes
 the data being recorded. The next eight lines are all index data being modified.
 The final line is the transaction being committed. Note that it references
 a 'subxact,' which I also pasted.
+</p>
 
+<p>
 The 'len (rec/tot)' section I take to represent the total length of data being
 recorded. I'm not sure what the 'rec' field means. Then we can see the
 transaction number (what we queried on), and a pair of LSNs. The LSN type was
@@ -76,23 +107,32 @@ to each of the WAL segments. The 'prev' LSN is the LSN of the previously written
 WAL segment. I believe this is used in the case that the WAL has to be replayed.
 So this facility would ensure that the segments are replayed in sequence in the
 case that entries in the file are moved around.
+</p>
 
+<p>
 The 'desc' section denotes what type of operation happened. INSERT_LEAF means
 data needs to be added to the index's btree for example. The next interesting
 bit that I somewhat understand is 'rel' which explains what's being modified.
+</p>
 
+<p>
 Take the first line of the first dump:
+</p>
 
-```
+<pre>
 rel 1663/16385/18650
-```
+</pre>
 
+<p>
 Here 1663 represents the 'base' tablespace, 16385 is the 'moray' database, and
 18650 is the 'manta' relation.
+</p>
 
+<p>
 I started from the bottom:
+</p>
 
-```
+<pre>
 moray=# select relname from pg_class where relfilenode = 18650;
  relname
 ---------
@@ -110,33 +150,38 @@ moray=# select pg_relation_filepath('manta');
 ----------------------
  base/16385/18650
 (1 row)
-```
+</pre>
 
+<p>
 And then we can do the same for the subtransaction:
+</p>
 
-```
+<pre>
 moray=# select relname from pg_class where relfilenode = 18641;
         relname
 ------------------------
  manta_directory_counts
 (1 row)
-```
+</pre>
 
+<p>
 Now we know that this series of WAL records represents an INSERT into the
 'manta' table, how much data was written, in what order, and that it (correctly)
 kicked off a trigger to update manta_directory_counts.
+</p>
 
+<p>
 I should also note that pg_xlogdump will indicate if a write was a full-page
 write, which is important for some performance investigations.
+</p>
 
----
-
+<p>
 This was just one small example of what we can learn from the PG WAL using
 pg_xlogdump. You could conceivably graph a lot of this data over time and draw
 interesting conclusions from it.
+</p>
 
----
-
+<p>
 The takeaways here:
 - every individual data modification uses an LSN, grabs a WAL writer lock, and
   results in a round-trip to the synchronous replica (with varying levels of
@@ -146,12 +191,24 @@ The takeaways here:
   was index data
 - there's a ton of data in the WAL
 - understanding the WAL can be a great asset when developing new PG schemas
+</p>
 
+<p>
 The existing 'manta' schema isn't the best when it comes to improving latency
 and throughput, and minimizing storage usage. If the schema had more
 heap-only-tuple updates (HOT updates), the latency of inserts would be greatly
 reduced. Note that the manta_directory_counts relation sometimes has HOT updates
 due to the limited number of indexes it maintains.
+</p>
 
+<p>
 I hope this was interesting! It was nice for me to go back and record this
 despite not having touched pg_xlogdump (or my blog!) for many months now.
+</p>
+
+</div>
+</div> <!-- main block -->
+</body>
+
+</html>
+
