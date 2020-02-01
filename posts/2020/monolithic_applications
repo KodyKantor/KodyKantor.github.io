@@ -20,7 +20,8 @@
 <div class="post">
 
 <p>
-There has been some recent chatter online about monolithic architectures. Of
+There has been some <a href="https://thenewstack.io/this-week-in-programming-forget-microservices-monoliths-are-the-way-forward/">recent</a>
+chatter online about monolithic architectures. Of
 course we're all likely aware of the trend from the last few years of trying to
 separate every little piece of an application into its own service. Then
 everyone says we need to put each piece in its own virtual sandbox (but we can't
