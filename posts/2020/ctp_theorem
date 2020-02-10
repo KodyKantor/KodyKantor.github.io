@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="template.css">
+<title>Kody's Blog</title>
+</head>
+
+<body>
+
+<div class="main"> <!-- main block -->
+
+<div class="header">
+<a href="https://blog.kkantor.com/">Home</a>
+<h1>Kody's Blog</h1>
+
+<h2>CTP Theorem for Happiness at Work</h2>
+<h5>2020-02-09</h5>
+</div> <!-- header -->
+
+<div class="post">
+
+<p>
+Over the past couple years I've been trying to think of what makes me most happy
+at a given job. I think I've narrowed this down to a relatively easy to
+comprehend formula. I call it the CTP theorem. Just like the CAP theorem, in the
+ideal world we will have all three of the components all the time. When things
+go south though, we need to decide which are requirements, and which we are
+willing to sacrifice. If we have all three of C, T, and P in our work we will
+likely be extremely happy. If we have none of the three we will be extremely
+unhappy.
+</p>
+
+<p>
+The three components of the CTP theorem are culture, technology, and pay.
+</p>
+
+<h3>Culture</h3>
+
+<p>
+Culture is impossible to quantify, but there are two things
+that I've found make up culture. This came to me while I was thinking about
+Oxide Computer Co.'s set of published values and principles. The first is the
+principles that the employee and the company hold. The second is the set of
+values the an employee and a company hold.
+</p>
+
+<p>
+In grade school we would state some of the county's principles at the start of
+every day. These are noted in the pledge of allegience: 'and to the Republic for
+which it stands, one Nation under God, indivisible, with liberty and justice for
+all.' This states the we must be one indivisible country (we have fought to
+keep it this way in the past), and that everyone receives liberty and justice.
+</p>
+
+<p>
+Over time what we value changes. As we age people tend to become more
+conservative. Large cities tend to be more liberal thank rural areas. Having a
+child may cause an individual to begin to value spending time at home more than
+spending time at work.
+</p>
+
+<p>
+The Boy Scouts also repeat twelve values that are instilled in each boy. 'A
+Scout is trustworthy, loyal, helpful, friendly, courteous, kind, obedient,
+cheerful, thrifty, brave, clean, and reverent.' The suggestion in the Scout Law
+is that if you do not value these twelve things, then you are not truly a Scout.
+</p>
+
+<p>
+Those whose principles that do not align with their organization will find
+themselves mightily disliked. Misaligned values can be more subtle to identify,
+and may result in feeling like you are an outsider. If an employee's values do
+not change but a company's values do change the employee may feel left behind.
+Alternatively the employee may be reflecting on a Monday morning and wondering
+what happened to all of the friends they used to work with.
+</p>
+
+<p>
+Misaligned principles and values may also result in employees being let go. This
+is really obvious if your company's leadership plays musical chairs. For
+example, say a new CEO takes over. The CEO lets much of the senior leadership go
+and brings in their own people. Their values didn't align!
+</p>
+
+<p>
+Being in a leadership position (whether on paper or in spirit) allows you to
+influence how values change or stay the same. In this way you may find yourself
+looking forward to a brighter future at a company despite its current cultural
+problems.
+</p>
+
+<p>
+Cultural fit is a tricky thing. Company and employee values can change
+drastically over time. This is why I am so surprised when people are able to
+stay working at the same company for 20+ years.
+</p>
+
+<h3>Technology</h3>
+
+<p>
+I'll likely not consider working at an organization that delivers desktop
+instant messenger software written in C# for Microsoft Windows.  This point is
+relatively straightforward. Our preferences for technology change, and what we
+value in technology changes.
+</p>
+
+<h3>Pay</h3>
+
+<p>
+We've likely all been through a series of great interviews for a job that
+abruptly end after discussing compensation. At the end of the day one of the
+things that we need to consider is compensation. As with the previous two
+points, what we expect in compensation can change over time.
+</p>
+
+<h3>Putting it all together</h3>
+
+<p>
+Let's go through some example scenarios to see the theorem in action.
+</p>
+
+<h4>Pay discrepancy</h4>
+
+<p>
+You speak to a respected colleague who is working at a new company. They mention
+the interesting technology, and you find a role that you think you would enjoy.
+You apply. The technology sounds interesting, the team values mostly align
+with your values. You are very excited! Then the HR person says that they
+cannot match your current pay.
+</p>
+
+<p>
+You are likely disappointed. You were close to getting a hat trick! You think
+about the technology and culture again. Maybe the technology wasn't exactly
+the stuff that you wanted to work on (Golang on Linux)? Maybe you had some
+questions about the culture (too much management overhead, company is too
+large, etc.)? These small discrepancies in addition to the pay discrepancy
+make you refuse the offer.
+</p>
+
+<h4>Changing culture</h4>
+
+<p>
+You join a new company. Things are quite good for the first year you are there.
+You enjoy working at a small company with no stricly defined management. You
+and the company both value employee autonomy, finding the root cause of
+problems, and truly understanding how a system works.
+</p>
+
+<p>
+After a while the owners decide that things aren't moving fast
+enough and the customer is not pleased with the software that the company
+provides. Pressure is put on the company leaders to change their principles
+and values. Eventually the company leaders leave and the owners bring in people
+whose values align with the owners. You remain and find that you are not
+adjusting well to the change in values and principles. This causes you to be
+generally unhappy and feel out of place.
+</p>
+
+<p>
+Although you would like to leave the company and find somewhere that has
+values that align with yours you find that the pay is good, there are
+decent advancement opportunities due to the departures, and the technology is
+still very interesting. But what if the technology is no longer interesting or
+unpopular architecture decisions are made? What if your attempts at taking on
+more organizational responsiblity are foiled (due to a value misalignment,
+likely) and you are not able to positively (in your mind) influence the
+company's future values?
+</p>
+
+<h3>Conclusion</h3>
+
+<p>
+As you can see, this isn't just a simple yes/yes/no situation. Ideally you
+work somewhere where all components of the CTP theorem apply. In my experience
+I find a job where the CTP theorem initially applies, but due to changing
+culture (values / principles), technology, and pay I eventually decide to leave.
+The trick is finding the point at which the discrepancies in the CTP components
+push you over the edge.
+</p>
+
+<p>
+Hopefully this was helpful and drove you to reflect on your happiness at work.
+Thanks to Ashwin and Isaac for the inspiration and reflection time.
+</p>
+
+</div> <!-- main block -->
+</body>
+
+</html>
