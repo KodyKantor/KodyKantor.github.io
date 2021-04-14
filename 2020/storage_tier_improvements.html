@@ -41,7 +41,7 @@ ZFS (and the disks) that fio can't test.
 <p>
 We wrote a tool called 'chum' to test our storage performance. Chum is an
 nginx (or really any similar web server) client. It speaks to the WebDAV
-endpoint present in Manta's nginx installations. Chum is written in Rust. It
+endpoint present in Manta's nginx installations. Chum is written in Rust and it
 uses operating system threads (not green threads) to generate PUT and GET
 request load.
 </p>
@@ -55,12 +55,10 @@ components.
 <p>
 First, we don't use green threads because there's no point. IMO green threads
 really only serve a purpose in 'web scale' applications. If you need to solve
-the 10k client problem, feel free to use green threads. I can't think of another
-reason why green threads are necessary. I didn't want to bloat chum by bringing
-in a green thread library. In fact, we were initially using a green thread
-library (reqwest) to perform HTTP requests, but we had a bunch of mysterious
-problems with it crashing while doing small uploads (1-2KB and less). I never
-did root cause this. Once I realized that reqwest used green threads we
+the 10k client problem, feel free to use green threads. In fact, we were
+initially using a green thread library (reqwest) to perform HTTP requests, but
+we had a bunch of mysterious problems with it crashing while doing small uploads
+(1-2KB and less). Once I realized that reqwest used green threads we
 switched to using the libcurl binding instead, which is much more
 straightforward and simple. This all decreases cognitive load.
 </p>
@@ -69,14 +67,15 @@ straightforward and simple. This all decreases cognitive load.
 
 <p>
 Measuring performance is hard to get right. It's easy to start a benchmark
-and then forget about it until results pop out. It's much harder to start a
+and then forget about it until results pop out, but it's much harder to start a
 benchmark and make sure that it is measuring what you think it's measuring.
 </p>
 
 <p>
 We had a few instances where we had problems in chum that lead to us measuring
 chum's performance (to some extent) instead of the system under test. The
-first was in <a href="https://github.com/joyent/manta-chum/commit/a99da1e1d">this</a> commit.
+first was addressed in <a href="https://github.com/joyent/manta-chum/commit/a99da1e1d">this</a>
+commit.
 </p>
 
 <ol>
@@ -247,7 +246,7 @@ Lessons we learned:
 <ol>
 	<li>benchmarking software is hard to get right</li>
 	<li>understand how the software you're using works (all of it)</li>
-	<li>keep dependencies (nginx) up to date</li>
+	<li>keep dependencies (nginx) up to date, as long as you understand how the updates change things (see point 2)</li>
 </ol>
 
 </div>
