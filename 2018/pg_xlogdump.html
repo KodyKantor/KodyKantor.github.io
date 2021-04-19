@@ -183,14 +183,16 @@ interesting conclusions from it.
 
 <p>
 The takeaways here:
-- every individual data modification uses an LSN, grabs a WAL writer lock, and
-  results in a round-trip to the synchronous replica (with varying levels of
-  consistency based on how you configured your database)
-- one logical insert into the 'manta' table resulted in 15 round trips to
-  the PG replica and 2041 (logical) bytes of data written to WAL, 1080 of which
-  was index data
-- there's a ton of data in the WAL
-- understanding the WAL can be a great asset when developing new PG schemas
+<ul>
+	<li>every individual data modification uses an LSN, grabs a WAL writer lock, and
+	  results in a round-trip to the synchronous replica (with varying levels of
+	  consistency based on how you configured your database)</li>
+	<li> one logical insert into the 'manta' table resulted in 15 round trips to
+	  the PG replica and 2041 (logical) bytes of data written to WAL, 1080 of which
+	  was index data</li>
+	<li>there's a ton of data in the WAL</li>
+	<li>understanding the WAL can be a great asset when developing new PG schemas</li>
+</ul>
 </p>
 
 <p>
