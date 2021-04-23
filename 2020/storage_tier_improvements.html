@@ -52,17 +52,6 @@ production workloads against the metadata tier without involving many
 components.
 </p>
 
-<p>
-First, we don't use green threads because there's no point. IMO green threads
-really only serve a purpose in 'web scale' applications. If you need to solve
-the 10k client problem, feel free to use green threads. In fact, we were
-initially using a green thread library (reqwest) to perform HTTP requests, but
-we had a bunch of mysterious problems with it crashing while doing small uploads
-(1-2KB and less). Once I realized that reqwest used green threads we
-switched to using the libcurl binding instead, which is much more
-straightforward and simple. This all decreases cognitive load.
-</p>
-
 <h3>Problems found in chum</h3>
 
 <p>
