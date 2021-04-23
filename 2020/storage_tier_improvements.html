@@ -128,7 +128,7 @@ simulating with chum.
 		and determined that for our workload a 128k nginx block size
 		makes more sense. This is different than the filesystem's
 		'recordsize' tunable, which I've written about previously. This
-		is MANTA-4816.</p>
+		is <a href="https://smartos.org/bugview/MANTA-4816">MANTA-4816.</a></p>
 	</li>
 
 	<li>fsync on the main thread was slowing down all requests.
@@ -145,7 +145,7 @@ simulating with chum.
 		the two fsync operations to a thread pool.</p>
 
 		<p>This almost entirely eliminated first-byte latency and
-		drastically improved throughput. This is MANTA-4863.</p>
+		drastically improved throughput. This is <a href="https://smartos.org/bugview/MANTA-4863">MANTA-4863.</a></p>
 	</li>
 
 	<li>eventports does not behave as documented, or is documented poorly.
@@ -171,7 +171,7 @@ simulating with chum.
 
 		<p>It's easy to fix this, and can mostly be done with a
 		single-line kernel hotpatch. The mystery of why load is not
-		balanced between nginx workers remains! This is OS-8070.</p>
+		balanced between nginx workers remains! This is <a href="https://smartos.org/bugview/OS-8070">OS-8070</a>.</p>
 	</li>
 
 	<li>keepalives are disabled in production.
@@ -210,7 +210,7 @@ simulating with chum.
 		times each worker was attempting to grab the mutex. It was very
 		unbalanced. We can simply set this to 'off' and forget that this
 		ever happened. This behavior is off by default in new nginx
-		versions. This is MANTA-4967.</p>
+		versions. This is <a href="https://smartos.org/bugview/MANTA-4967#">MANTA-4967.</a></p>
 	</li>
 </ol>
 
