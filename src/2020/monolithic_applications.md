@@ -1,51 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-<link rel="stylesheet" type="text/css" href="template.css">
-<title>Kody's Blog</title>
-</head>
+# Monolithic applications
+#### 2020-02-01
 
-<body>
-
-<div class="main"> <!-- main block -->
-
-<div class="header">
-<a href="https://blog.kkantor.com/">Home</a>
-<h1>Kody's Blog</h1>
-
-<h2>Monolithic applications</h2>
-<h5>2020-02-01</h5>
-</div> <!-- header -->
-
-<div class="post">
-
-<p>
-There has been some <a href="https://thenewstack.io/this-week-in-programming-forget-microservices-monoliths-are-the-way-forward/">recent</a>
+There has been some [recent](https://thenewstack.io/this-week-in-programming-forget-microservices-monoliths-are-the-way-forward/)
 chatter online about monolithic architectures. Of
 course we're all likely aware of the trend from the last few years of trying to
 separate every little piece of an application into its own service. Then
 everyone says we need to put each piece in its own virtual sandbox (but we can't
 care where, that's against the rules).
-</p>
 
-<p>
 After having worked with a service-oriented architecture like this for a few
 years, I can say that there are definitely problems with microservice
 architectures.  I'll outline just a few problems that we've encountered at
 Joyent. I'll later offer tweaks that we can make to a service-oriented
 architecture to hopefully reduce the pain of the problems.
-</p>
 
-<p>
 My experience is coming from working with Joyent's Manta object storage system.
 Manta actually has a very simple architecture, yet we're still having problems
 with the many services we operate. I can't begin to imagine the problems that
 organizations with hundreds of services face.
-</p>
 
-<h3>Problems</h3>
+### Problems
 
-<p>
 Latency is generally much worse. The idea of microservices is that each service
 does very little. In order to accomplish anything a number of RPCs (using HTTP
 requests or something similar) have to be sent across a wire to another service
@@ -54,9 +29,7 @@ amount of time. One way you could theoretically reduce the time spent on the
 wire making RPCs is to colocate services so they are only communicating over
 a local socket. Some may argue that leads to treating your services like 'pets'
 and not 'cattle.'
-</p>
 
-<p>
 It's hard to observe a microservice application. There has been a lot of work
 across the industry trying to solve this problem. The numerous 'service mesh'
 software, distributed tracing, Prometheus and co., and monitoring provided by
@@ -64,9 +37,7 @@ the compute platform itself. These environments are generally dynamic. Maybe
 one RPC went to instance0 of service0, but the second RPC went to instance9 of
 service0. Correlating an end-user's request failure with one of these RPCs can
 be a herculean task.
-</p>
 
-<p>
 Swapping out services is not as easy as advertised. One of the advertised
 benefits of microservice architectures is that it's easy to swap out
 implementations of a service since the implementation is abstracted by an API.
@@ -74,61 +45,47 @@ But what if the API is garbage? Have you ever written a perfect API the first
 time? In my experience we've wanted to swap the API more than the rest of the
 service. Dealing with changing APIs (especially remote APIs) is extremely
 difficult, and made more difficult by the myriad possible consumers of said API.
-</p>
 
-<h3>Solutions</h3>
+### Solutions
 
-<p>
 The core of these problems can likely be solved by combining everything into a
 single service. You might even be able to get away with sticking your entire
 application into a single binary. Heck, the Minio folks did it, why can't you?
-</p>
 
-<p>
 With everything in a single binary, we know that wire latency is not a factor.
 We don't have to worry about availability zones, each like request will probably
 take the same amount of time as the last. We don't have to think about one RPC
 hitting a colocated service and the next hitting a service in the next
 datacenter.
-</p>
 
-<p>
 Observability could be a wash. Sure it's easier to reason about how an
 application works, but it may be harder for many folks to debug the application.
 Without good observability tools like DTrace and mdb, some may still struggle
 to find out how an application works. Systems like Prometheus would still be
 valuable in a monolithic world (but labels would be more important to separate
 the logical bounds of some operations).
-</p>
 
-<p>
 Swapping out services is where I think a monolithic architecture really shines.
 This may be a surprise. In a monolithic architecture the compiler makes sure
 that any API change is handled by all consumers. Breaking changes can be made
 whenever we want because updating one service means every service is updated
 simultaneously. There is no need to maintain backward compat if we can update
 every service at once.
-</p>
 
-<h3>A compromise</h3>
+### A compromise
 
-<p>
 Obviously purely monolithic applications have their drawbacks. In my experience
 at Veritas with their (mostly) monolithic systems, a monolith leads to fear.
 The organization imposes boundaries on the software so that Team X is only
 allowed to touch corners A and C of the code. If Team X wants to touch B, they
 have to talk to the architect for B.
-</p>
 
-<p>
 Leaning on the compiler to enforce breaking changes are addressed doesn't scale.
 What if your team is in charge of the lone database service and wants to change
 an API? All of that code from 30 years ago that depends on the existing API now
 needs to be changed. Just your luck, there is still one person who still knows
 how that code works. He was an intern when the code was written!
-</p>
 
-<p>
 What if we designed a service-oriented architecture but deployed it like a
 monolith? Let's combine services where we can, and then deploy the entire thing
 in one package. No network calls (except maybe to a database and long term
@@ -136,23 +93,13 @@ storage or whatever other shared resources your system necessitates) and much
 easier upgrades (just update a single container or VM). We still don't have to
 deal with garbage like backward compat HTTP APIs, but the compiler won't help
 us either. It's a compromise.
-</p>
 
-<p>
 Amazon and other *aaS providers are the winners in a microservice world. They
 provide the most critical services for your applications, like persistent
 storage and a scale-out database, and generously allow you to build the glue
 necessary to get your customer data into the AWS system. But sometimes they will
 provide the glue for you as well so all you need to do is hire 'full stack'
 developers to write a UI and DAL.
-</p>
 
-<p>
 This post has now resurrected my rage when I hear the title 'full stack
 developer.'
-</p>
-
-</div> <!-- main block -->
-</body>
-
-</html>

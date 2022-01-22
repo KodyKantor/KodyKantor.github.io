@@ -1,52 +1,27 @@
-<!DOCTYPE html>
-<html>
-<head>
-<link rel="stylesheet" type="text/css" href="template.css">
-<title>Kody's Blog</title>
-</head>
+# Postgres Temporary Files
+#### 2019-03-18
 
-<body>
-
-<div class="main"> <!-- main block -->
-
-<div class="header">
-<a href="https://blog.kkantor.com/">Home</a>
-<h1>Kody's Blog</h1>
-
-<h2>Postgres Temporary Files</h2>
-<h5>2019-03-18</h5>
-</div> <!-- header -->
-
-<div class="post">
-<p>
 Today someone reported that our Postgres dashboard in Grafana was very choppy.
 Prometheus is supposed to go out and scrape our pgstatsmon targets every minute.
 There are three pgstatsmon targets in each region - one in each datacenter.
-</p>
 
-<p>
 It turned out that the problem (as usual) was in Prometheus. Our Prometheus
 instance was running out of memory and falling behind scraping targets.
 However, since I was already logged into production I began looking at our
 pgstatsmon instances to see if there were any problems with them.
-</p>
 
-<p>
 Another person earlier mentioned that pgstatsmon was throwing occasional query
 timeout and connection errors. pgstatsmon ships with a few simple DTrace scripts
 just for situations like these.
-</p>
 
-<p>
 In our first and second datacenters everything was clean. pgstatsmon had
 connections to all 97 Postgres backends, and there were no operational errors
 (query timeouts, connection errors) or programmer errors (query errors, NaN
 errors). Our last datacenter was reporting an error connecting to a Postgres
 backend. I logged into that backend's zone and saw that it was a deposed peer
 (a former primary that had failed):
-</p>
 
-<pre>
+```
 [root@aa7ab002 (postgres) ~]$ manatee-adm show
 zookeeper:   zk_addr
 cluster:     57.moray
@@ -61,21 +36,17 @@ deposed  aa7ab002 ok   -     -             -             -             -
 
 warning: cluster has a deposed peer
 warning: cluster has no async peers
-</pre>
+```
 
-<p>
 So that wasn't pgstatsmon's fault, but something that we should investigate
 later. This explains the latent connection errors that were reported.
-</p>
 
-<p>
 While looking into this I had left the other pgstatsmon DTrace scripts running.
 In the intervening time the other pgstatsmon instances reported a number of
 query timeouts to a few shards. Digging deeper with another DTrace script, this
 is what we see:
-</p>
 
-<pre>
+```
 36.postgres.my.domain-090930c5
                QUERY      LAT QTIM QERR  NaN
  pg_stat_user_tables      469    0    0    0
@@ -89,50 +60,38 @@ pg_statio_user_indexes    496    0    0    0
     pg_stat_bgwriter     1002    1    0    0
 pg_stat_progress_vacuum  1003    1    0    0
            pg_vacuum     1003    1    0    0
-</pre>
+```
 
-<p>
 The columns are:
-</p>
-<ul>
-	<li>QUERY: the 'name' of the query. Usually this refers to the primary
-		data sourcewhere pgstatsmon gets its data.</li>
-	<li>LAT: cumulative latency for queries to this backend.</li>
-	<li>QTIM: 1 if the query timed out.</li>
-	<li>QERR: 1 if an error was returned from Postgres.</li>
-	<li>NaN: 1 if the data returned was a NaN type in Javascript.</li>
-</ul>
+- QUERY: the 'name' of the query. Usually this refers to the primary
+		data sourcewhere pgstatsmon gets its data.
+- LAT: cumulative latency for queries to this backend.
+- QTIM: 1 if the query timed out.
+- QERR: 1 if an error was returned from Postgres.
+- NaN: 1 if the data returned was a NaN type in Javascript.
 
-<p>
 Right off the bat, these queries should all finish in less than 300ms. The first
 query usually takes about 20ms. pgstatsmon timed out the queries after they took
 1s of cumulative time. But why were these queries taking so long? I logged in to
 the Postgres instance to investigate.
-</p>
 
-<p>
 The first thing I looked at in the Postgres zone was its log file. It didn't
 take long to find a potential problem.
-</p>
 
-<pre>
+```
 2019-03-18 19:32:45 UTC LOG:  temporary file: path "base/pgsql_tmp/pgsql_tmp85092.468", size 1018377378
 2019-03-18 19:32:45 UTC STATEMENT:  SELECT *, '916f7bc4-8e55-647c-8a16-96a48c4895ec' AS req_id FROM manta_fastdelete_queue WHERE  ( $1 <= _mtime AND _mtime IS NOT NULL )  LIMIT 3500 OFFSET 7000
-</pre>
+```
 
-<p>
 manta_fastdelete_queue is a Postgres relation that we use to store information
 about files ready for deletion. This is part of relatively new 'accelerated GC'
 code in Manta. The accelerated GC code is the only code that should be touching
 this table, and it is not expected that queries should be creating temporary
 files.
-</p>
 
-<p>
 Next I looked at the temp files on disk to see how many and how large they were:
-</p>
 
-<pre>
+```
 [root@090930c5 (postgres) ~]$ ls -lh /manatee/pg/data/base/pgsql_tmp/
 total 6.1G
 -rw------- 1 postgres root 1.0G Mar 18 19:51 pgsql_tmp85093.501
@@ -147,21 +106,17 @@ total 6.1G
 -rw------- 1 postgres root 1.0G Mar 18 19:51 pgsql_tmp85161.509
 -rw------- 1 postgres root 1.0G Mar 18 19:52 pgsql_tmp85161.510
 -rw------- 1 postgres root 972M Mar 18 19:52 pgsql_tmp85161.511
-</pre>
+```
 
-<p>
 That's unfortunate. An interesting observation - 'ls' reports 6.1G at the top
 level, but there are about 12 1GB files in the listing... I also
 verified that these queries were showing up in pg_stat_activity.
-</p>
 
-<p>
 The Postgres docs on LIMIT and OFFSET note that the OFFSET has to be computed by
 the server and may cause performance problems. Looking at the EXPLAIN of the
 query being used gives us some answers:
-</p>
 
-<pre>
+```
 moray=> explain SELECT * FROM manta_fastdelete_queue WHERE  ( 1000 <= _mtime AND _mtime IS NOT NULL )  LIMIT 3500 OFFSET 3500;
                                         QUERY PLAN
 -------------------------------------------------------------------------------------------
@@ -169,27 +124,21 @@ moray=> explain SELECT * FROM manta_fastdelete_queue WHERE  ( 1000 <= _mtime AND
    ->  Seq Scan on manta_fastdelete_queue  (cost=0.00..1551769.54 rows=4485435 width=1410)
          Filter: ((_mtime IS NOT NULL) AND (1000 <= _mtime))
 (3 rows)
-</pre>
+```
 
-<p>
 That tells us that this query is most likely going to try to scan the entire
 manta_fastdelete_queue table. This is probably why we're hitting work_mem and
 making temporary files.
-</p>
 
-<p>
-It also begs another question. Why didn't it list anything about OFFSET or
-LIMIT in the output?
-</p>
+It also begs another question. Why didn't it list anything about `OFFSET` or
+`LIMIT` in the output?
 
-<p>
-Based on what I've seen my theory is that the OFFSET directive is causing the
-backend process to buffer much of the table in memory to compute the OFFSET.
+Based on what I've seen my theory is that the `OFFSET` directive is causing the
+backend process to buffer much of the table in memory to compute the `OFFSET`.
 Our work_mem is set to a measly 3MB (which has never led to this problem in the
 past) and this relation on disk is about 12GB:
-</p>
 
-<pre>
+```
 [root@090930c5 (postgres) ~]$ ls -lh /manatee/pg/data/base/16385/74462*
 -rw------- 1 postgres root 1.0G Mar 18 20:40 /manatee/pg/data/base/16385/74462
 -rw------- 1 postgres root 1.0G Mar 18 20:43 /manatee/pg/data/base/16385/74462.1
@@ -203,54 +152,39 @@ past) and this relation on disk is about 12GB:
 -rw------- 1 postgres root 1.0G Mar 18 20:09 /manatee/pg/data/base/16385/74462.7
 -rw------- 1 postgres root 1.0G Mar 18 20:32 /manatee/pg/data/base/16385/74462.8
 -rw------- 1 postgres root 1.0G Mar 18 19:39 /manatee/pg/data/base/16385/74462.9
-</pre>
+```
 
-<h4>June Update</h4>
+### June Update
 
-<p>
 It appears that I was on to something deeper here. I was looking at another
 system during a recent trip to Korea and noticed that there were some queries
 blocking on the WALWriteLock. The WALWriteLock is infamous for being on the
 scene during Postgres performance issues. It needs to be acquired whenever a
 record is inserted into the WAL. IIUC this happens whenever a transaction
 modifies table data.
-</p>
 
-<p>
-I took a statemap (https://github.com/joyent/statemap) of the system I was
+I took a [statemap](https://github.com/joyent/statemap) of the system I was
 looking at. These are the things I observed:
-<ul>
-	<li>Multiple processes blocking on locks (presumably WALWriteLock)</li>
-	<li>A few processes spending _way_ too much time in zil_commit</li>
-</ul>
-</p>
+- Multiple processes blocking on locks (presumably WALWriteLock)
+- A few processes spending _way_ too much time in zil_commit
 
-<p>
 I then used DTrace to track zil_commit latencies, and the results were damning.
 Some zil_commits were taking over 200ms! Since zil_commit is how ZFS implements
 fsync it's no wonder things were performing pathologically.
-</p>
 
-<p>
 My coworker Jerry was able to pretty quickly determine that the zil_commit ZIOs
 were getting delayed in the ZIO pipeline, which was causing much of the latency.
-</p>
 
-<p>
-I also wrote a complicated DTrace script (and found a DTrace bug on the way!)
-to track where ZIOs are spending time in the ZIO pipeline:
-https://github.com/KodyKantor/kodyops/blob/master/illumos/dtrace/zio.d
+I also wrote a [complicated DTrace](https://github.com/KodyKantor/kodyops/blob/master/simulators/zfs_usage_simulator.sh) script (and found a DTrace bug on the way!)
+to track where ZIOs are spending time in the ZIO pipeline.
 It's a riff on an 'extended' DTrace script that George Wilson presented at
 the 2018 OpenZFS Summit. My version is a little more complicated, since it only
 prints pipelines that are over a given time threshold (in your time unit of
 choice) and also calculates time the ZIO spent waiting (not being executed).
-</p>
 
-<p>
 The result of running my zio.d script is this:
-</p>
 
-<pre>
+```
 	[65532ns] zil_lwb_write_issue
 	[20317ns] zio_write_bp_init
 	[27606ns] wait
@@ -274,23 +208,10 @@ The result of running my zio.d script is this:
 	[10576ns] wait
 	[743981ns] DTrace calculated duration
 	[664521ns] ZIO reported duration
-</pre>
+```
 
-<p>
 Pretty useful!
-</p>
 
-<p>
 In the end we discovered that the ZFS bug we were encountering had been fixed
 a few months ago (illumos#9993 fixed in Nov 2018), which was caused by commit
-illumos#19097 - zfs i/o scheduler needs some work. Funny enough, the day we
-discovered this bug was hurting us was the six year anniversary of the bug
-being introduced! It was introduced about a week before my brother graduated
-from college. Nice!
-</p>
-
-</div>
-</div> <!-- main block -->
-</body>
-
-</html>
+illumos#19097 - "zfs i/o scheduler needs some work."

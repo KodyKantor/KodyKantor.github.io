@@ -1,49 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-<link rel="stylesheet" type="text/css" href="template.css">
-<title>Kody's Blog</title>
-</head>
+# Cluster Simulator
+#### 2021-04-08
 
-<body>
+### A tree in the forest
 
-<div class="main"> <!-- main block -->
-
-<div class="header">
-<a href="https://blog.kkantor.com/">Home</a>
-<h1>Kody's Blog</h1>
-
-<h2>Cluster Simulator</h2>
-<h5>2021-04-08</h5>
-</div> <!-- header -->
-
-<div class="post">
-
-<h3>A tree in the forest</h3>
-
-<p>
 I've always enjoyed writing simulators to describe our production
 environment. In late 2020 we had a question that merited a simulator: how much
 network and disk IO do we need to buy for our storage system?
-</p>
 
-<p>
 When we first asked this question we were armed with a manual calculation that
 someone from Samsung had put together. It was a tree diagram that described a
 typical network and rack architecture with nodes indicating some type of
 hardware, and edges indicating network connections between nodes. At the top of
 the diagram is a description of the workload and environment.
-</p>
 
-<p>
 For example, one environment might consist of a single 12 node storage cluster
 with four parity blocks and eight data blocks per erasure coding stripe and be
 deployed across three datacenters without 'bin packing' racks. The description
 would also note how much throughput would be happening in the cluster at any
 given time, expressed in gigabits per second.
-</p>
 
-<p>
 The diagram itself noted how much data would happen on each node in the
 cluster with the given workload and configuration. For example, maybe the
 workload was 100gbps of write-only traffic. In this case, the Internet-facing
@@ -52,35 +27,27 @@ between three more switches, each in a different datacenter. With simple math we
 can determine that each of those three second-level switches served (at least)
 ~33gbps of throughput. Then we can further divide the throughput to the ToRs and
 machines in each region. A simplified example is shown below.
-</p>
 
-<img src="assets/rack_tree_diagram.jpg" alt="example throughput tree diagram" width=800>
+![example throughput tree diagram](assets/rack_tree_diagram.jpg)
 
-<p>
 After this point the calculations get much more complicated. Due to EC write
 inflation across three datacenters the 33gbps number isn't accurate. It ended
 up being that each switch would see ~125gbps of combined rx/tx throughput.
-</p>
 
-<p>
 Although the calculations are relatively simple for a single cluster and a
 handful of racks, the problem of estimating network and disk IO requirements
 quickly becomes unwieldy for a single mind to compute or for a tree diagram to
 display. Good thing we have computers!
-</p>
 
-<h3>Admitted Google Drive lover</h3>
+### Admitted Google Drive lover
 
-<p>
 I have what could probably be described as an irational love of creating
 diagrams and calculators in Google Drive. I started the ZFS capacity usage
 simulator in a Google Sheet, and the cluster throughput simulator also started
 as a Google Sheet. All of the architecture diagrams I draw are done in Google
 Slides... It's just so easy to get started things in Google Drive and is easy to
 share with technical and non-technical folks alike.
-</p>
 
-<p>
 After a day of fighting with Google Sheets calculations and the inability
 to easily write comments for myself I decided to migrate the cluster throughput
 simulator to Python. Making the jump from trying to beat Google Sheets into
@@ -88,9 +55,7 @@ submission to Python was amazing. Being able to represent racks, switches,
 machines, datacenters, and regions as Python objects was incredibly powerful,
 and we were able to quickly put together a program that reproduced the trivial
 throughput diagrams that were provided to us.
-</p>
 
-<p>
 Now that we had the primitives in place to simulate arbitrary topologies, only
 a bit more tweaking allows us to churn out network simulations for an
 arbitrary number of clusters, racks, datacenters, machines, erasure coding
@@ -98,9 +63,8 @@ parameters, and even whether or not our simulated deployment system used a
 bin-pack or spread algorithm. Once we had the primitives in place I was curious
 what disk IO looked like, so by adding just a few lines of code we knew how much
 disk throughput would be required for a given user workload.
-</p>
 
-<pre>
+```
 Region
   DC0: tx=44.4 rx=77.8
      RACK0: tx=44.4 rx=77.8
@@ -117,16 +81,14 @@ Region
         MACHINE6: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
         MACHINE7: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
         MACHINE8: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
-</pre>
+```
 
-<p>
 This is a fun tool to play with. Maybe I'm curious how four 12-node clusters
 with quadruple parity, and 'spread' service allocation handle 600gbps upload /
 300 gbps download throughput. Thanks to this tool I know my answer less than
 10 seconds after I asked it down to the individual machine.
-</p>
 
-<pre>
+```
 Region
   DC0: tx=468.8 rx=564.8
      RACK0: tx=115.6 rx=141.4
@@ -191,27 +153,15 @@ Region
         MACHINE45: cluster=1 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
         MACHINE46: cluster=2 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
         MACHINE47: cluster=3 tx=28.1 rx=35.9 disk_write=18.8 disk_read=4.7
-</pre>
+```
 
-<p>
 This tool continues to help us to understand and explain how data moves in our
 datacenters. It was great fun writing this tool (even when I was writing it in
 Google Sheets!). I had forgotten about the story of this tool until a colleague
 and I were discussing the relative ease of debugging some languages over
 others. This was the first project where I found myself using the Python
 debugger.
-</p>
 
-<p>
 I hope that you enjoyed this brief look at a simple solution to a complicated
 problem. If you're curious to see the simulator (and maybe step through it in
-the Python debugger :) ) you can find the code
-<a href="https://github.com/KodyKantor/kodyops/blob/master/simulators/storage_cluster.py">
-here</a>.
-</p>
-
-</div> <!-- post block -->
-</div> <!-- main block -->
-</body>
-
-</html>
+the Python debugger :) ) you can find the code [here](https://github.com/KodyKantor/kodyops/blob/master/simulators/storage_cluster.py).
