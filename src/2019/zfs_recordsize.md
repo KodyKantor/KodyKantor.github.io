@@ -9,7 +9,7 @@ have result in massive returns.
 For the example, a 1% reduction in capacity needed to store one exabyte of data
 saves 10 petabytes. TEN PETABYTES. If we have a storage server that has 250TB of
 usable capacity, that's 40 storage servers worth of capacity we've saved. 40
-fucking boxes! That's absolutely crazy.
+boxes! That's absolutely crazy.
 
 I was able to find a way for us to save between one and two percent capacity by
 diving into the nitty gritty of the ZFS recordsize attribute.
