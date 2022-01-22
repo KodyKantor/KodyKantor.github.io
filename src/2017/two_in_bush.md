@@ -1,4 +1,4 @@
-## Worth Two in the Bush
+# Worth Two in the Bush
 #### 2017-01-16
 
 Idioms are some of my favorite literary constructs to think about. They can
