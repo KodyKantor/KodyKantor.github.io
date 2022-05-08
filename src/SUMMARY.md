@@ -3,6 +3,10 @@
 [Welcome](./welcome.md)
 
 ---
+# 2022
+- [Enjoying technical debt](./2022/tech_debt.md)
+
+---
 
 # 2021
 - [Statemap library for Rust programs](./2021/rust-statemap.md)
