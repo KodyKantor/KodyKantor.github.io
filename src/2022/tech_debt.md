@@ -11,8 +11,7 @@ it with you here.
 
 Technical debt can come in many forms. You will commonly hear that technical
 debt comes as a result of taking shortcuts when building software. This is
-certainly one place where technical debt comes from. In a well-run software
-project this should rarely happen.
+certainly one place where technical debt comes from.
 
 ### Shortcuts
 
@@ -21,19 +20,26 @@ Unfortunately time is a valuable resource! Sometimes shortcuts when building
 software can be necessary to quickly demonstrate concepts. After the concept is
 demonstrated to stakeholders we need to make a decision: continue using the
 concept code (ignore the tech debt), or replace the concept code with a long-term
-soltuion (pay down the debt).
+solution (pay down the debt).
 
 The software industry has no shortage of euphemisms for shortcuts: proof of
 concept and 'demo code' are common. We even have a name for engineers who do
 this type of work often: rockstars!
 
 Sometimes shortcuts are necessary. The organization you find yourself in may
-dictate how often you take shortcuts. For example, an
-organization where there is a strong vision and agreement between parties may
-not require many shortcuts - the emphasis is on delivering a good solution to
-customers. In an organization that doesn't value being thorough or one that
-isn't as focused on a shared vision you may find yourself taking more shortcuts
-to convince others of your idea.
+dictate how often you take shortcuts. For example, an organization where there
+is a strong vision and agreement between parties may not require many shortcuts -
+the emphasis is on delivering a good solution to customers. In an organization
+that doesn't value being thorough or one that isn't as focused on a shared
+vision you may find yourself taking more shortcuts to convince others of your
+idea.
+
+Technical debt can be used as leverage. We only have a finite amount of time to
+build software. Choosing to take on technical debt by taking a shortcut means we 
+are essentially borrowing time from the future to achieve our goals sooner. This
+can be incredibly valuable! After all, there is an infinite amount of time in
+the future that we can use as leverage, and the time before the next demo is
+certainly finite!
 
 ### Low priority tasks
 
@@ -75,7 +81,8 @@ team.
 ### Autonomy
 
 I choose which tasks I take on. Nobody asked me to do this work, so
-I feel that it is a great opportunity to choose how I perform these tasks.
+I feel that it is a great opportunity to choose how and when I perform these
+tasks.
 
 ### Mastery
 
@@ -87,7 +94,8 @@ tool or learn a new area of the system.
 
 Taking on this work not only makes me feel good due to the previous
 two points, but it helps me to make others on my team more productive. This
-pays dividends!
+pays dividends! The best way to succeed is to make sure your project succeeds,
+and one way to do this is to enable your coworkers to do good work.
 
 ### Increased productivity
 
@@ -95,7 +103,6 @@ When I am working on a difficult problem I often find
 it benefitial to stop and focus on something else for a short time. This
 allows my subconcious to continue chewing on the problem while I do something
 else. Paying tech debt is a productive break from critical work.
-
 
 ## The playbook
 
