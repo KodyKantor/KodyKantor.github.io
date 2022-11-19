@@ -7,3 +7,7 @@ title = "Kody's Blog"
 
 [build]
 create-missing = false
+
+[output.html]
+default-theme = "rust"
+preferred-dark-theme = "rust"
