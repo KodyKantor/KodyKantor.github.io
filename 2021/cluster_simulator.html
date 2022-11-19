@@ -1,0 +1,332 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js rust">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Cluster Simulator - Kody&#x27;s Blog</title>
+        <!-- Custom HTML head -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-90522412-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-90522412-1');
+</script>        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "rust" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../welcome.html">Welcome</a></li><li class="chapter-item expanded affix "><a href="../2022/tech_debt.html">Enjoying technical debt</a></li><li class="chapter-item expanded affix "><a href="../2021/rust-statemap.html">Statemap library for Rust programs</a></li><li class="chapter-item expanded affix "><a href="../2021/cluster_simulator.html" class="active">Cluster Simulator</a></li><li class="chapter-item expanded affix "><a href="../2020/minio_tracing.html">Tracing MinIO and rust-statemap</a></li><li class="chapter-item expanded affix "><a href="../2020/ctp_theorem.html">CTP Theorem for Happiness at Work</a></li><li class="chapter-item expanded affix "><a href="../2020/monolithic_applications.html">Monolithic Applications</a></li><li class="chapter-item expanded affix "><a href="../2019/zfs_recordsize.html">ZFS Recordsize</a></li><li class="chapter-item expanded affix "><a href="../2019/pg_temp_files.html">Postgres Temporary Files</a></li><li class="chapter-item expanded affix "><a href="../2019/hw_raid_eating_data.html">Hardware RAID is lying to you</a></li><li class="chapter-item expanded affix "><a href="../2018/pg_xlogdump.html">pg_xlogdump(1) - a tale of 15 round trips</a></li><li class="chapter-item expanded affix "><a href="../2017/android_cr.html">Android Checkpoint / Restore</a></li><li class="chapter-item expanded affix "><a href="../2017/dockerbox.html">Dockerbox - Virtual Filesystem</a></li><li class="chapter-item expanded affix "><a href="../2017/two_in_bush.html">Worth Two in the Bush</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Kody&#x27;s Blog</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="cluster-simulator"><a class="header" href="#cluster-simulator">Cluster Simulator</a></h1>
+<h4 id="2021-04-08"><a class="header" href="#2021-04-08">2021-04-08</a></h4>
+<h3 id="a-tree-in-the-forest"><a class="header" href="#a-tree-in-the-forest">A tree in the forest</a></h3>
+<p>I've always enjoyed writing simulators to describe our production
+environment. In late 2020 we had a question that merited a simulator: how much
+network and disk IO do we need to buy for our storage system?</p>
+<p>When we first asked this question we were armed with a manual calculation that
+someone from Samsung had put together. It was a tree diagram that described a
+typical network and rack architecture with nodes indicating some type of
+hardware, and edges indicating network connections between nodes. At the top of
+the diagram is a description of the workload and environment.</p>
+<p>For example, one environment might consist of a single 12 node storage cluster
+with four parity blocks and eight data blocks per erasure coding stripe and be
+deployed across three datacenters without 'bin packing' racks. The description
+would also note how much throughput would be happening in the cluster at any
+given time, expressed in gigabits per second.</p>
+<p>The diagram itself noted how much data would happen on each node in the
+cluster with the given workload and configuration. For example, maybe the
+workload was 100gbps of write-only traffic. In this case, the Internet-facing
+switch would serve 100gbps of network traffic, and split that 100gbps evenly
+between three more switches, each in a different datacenter. With simple math we
+can determine that each of those three second-level switches served (at least)
+~33gbps of throughput. Then we can further divide the throughput to the ToRs and
+machines in each region. A simplified example is shown below.</p>
+<p><img src="assets/rack_tree_diagram.jpg" alt="example throughput tree diagram" /></p>
+<p>After this point the calculations get much more complicated. Due to EC write
+inflation across three datacenters the 33gbps number isn't accurate. It ended
+up being that each switch would see ~125gbps of combined rx/tx throughput.</p>
+<p>Although the calculations are relatively simple for a single cluster and a
+handful of racks, the problem of estimating network and disk IO requirements
+quickly becomes unwieldy for a single mind to compute or for a tree diagram to
+display. Good thing we have computers!</p>
+<h3 id="admitted-google-drive-lover"><a class="header" href="#admitted-google-drive-lover">Admitted Google Drive lover</a></h3>
+<p>I have what could probably be described as an irational love of creating
+diagrams and calculators in Google Drive. I started the ZFS capacity usage
+simulator in a Google Sheet, and the cluster throughput simulator also started
+as a Google Sheet. All of the architecture diagrams I draw are done in Google
+Slides... It's just so easy to get started things in Google Drive and is easy to
+share with technical and non-technical folks alike.</p>
+<p>After a day of fighting with Google Sheets calculations and the inability
+to easily write comments for myself I decided to migrate the cluster throughput
+simulator to Python. Making the jump from trying to beat Google Sheets into
+submission to Python was amazing. Being able to represent racks, switches,
+machines, datacenters, and regions as Python objects was incredibly powerful,
+and we were able to quickly put together a program that reproduced the trivial
+throughput diagrams that were provided to us.</p>
+<p>Now that we had the primitives in place to simulate arbitrary topologies, only
+a bit more tweaking allows us to churn out network simulations for an
+arbitrary number of clusters, racks, datacenters, machines, erasure coding
+parameters, and even whether or not our simulated deployment system used a
+bin-pack or spread algorithm. Once we had the primitives in place I was curious
+what disk IO looked like, so by adding just a few lines of code we knew how much
+disk throughput would be required for a given user workload.</p>
+<pre><code>Region
+  DC0: tx=44.4 rx=77.8
+     RACK0: tx=44.4 rx=77.8
+        MACHINE0: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
+        MACHINE1: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
+        MACHINE2: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
+  DC1: tx=44.4 rx=77.8
+     RACK1: tx=44.4 rx=77.8
+        MACHINE3: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
+        MACHINE4: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
+        MACHINE5: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
+  DC2: tx=44.4 rx=77.8
+     RACK2: tx=44.4 rx=77.8
+        MACHINE6: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
+        MACHINE7: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
+        MACHINE8: cluster=0 tx=14.8 rx=25.9 disk_write=16.7 disk_read=0.0
+</code></pre>
+<p>This is a fun tool to play with. Maybe I'm curious how four 12-node clusters
+with quadruple parity, and 'spread' service allocation handle 600gbps upload /
+300 gbps download throughput. Thanks to this tool I know my answer less than
+10 seconds after I asked it down to the individual machine.</p>
+<pre><code>Region
+  DC0: tx=468.8 rx=564.8
+     RACK0: tx=115.6 rx=141.4
+        MACHINE0: cluster=0 tx=28.9 rx=35.2 disk_write=18.8 disk_read=6.2
+        MACHINE1: cluster=1 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+        MACHINE2: cluster=2 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE3: cluster=3 tx=28.9 rx=35.9 disk_write=18.8 disk_read=5.5
+     RACK1: tx=114.1 rx=140.6
+        MACHINE4: cluster=0 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+        MACHINE5: cluster=1 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+        MACHINE6: cluster=2 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE7: cluster=3 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+     RACK2: tx=118.8 rx=141.4
+        MACHINE8: cluster=0 tx=28.9 rx=35.2 disk_write=18.8 disk_read=6.2
+        MACHINE9: cluster=1 tx=30.5 rx=35.2 disk_write=18.8 disk_read=7.8
+        MACHINE10: cluster=2 tx=28.9 rx=35.9 disk_write=18.8 disk_read=5.5
+        MACHINE11: cluster=3 tx=30.5 rx=35.2 disk_write=18.8 disk_read=7.8
+     RACK3: tx=120.3 rx=141.4
+        MACHINE12: cluster=0 tx=28.9 rx=35.2 disk_write=18.8 disk_read=6.2
+        MACHINE13: cluster=1 tx=31.2 rx=35.9 disk_write=18.8 disk_read=7.8
+        MACHINE14: cluster=2 tx=31.2 rx=35.2 disk_write=18.8 disk_read=8.6
+        MACHINE15: cluster=3 tx=28.9 rx=35.2 disk_write=18.8 disk_read=6.2
+  DC1: tx=460.2 rx=566.4
+     RACK4: tx=113.3 rx=141.4
+        MACHINE16: cluster=0 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE17: cluster=1 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+        MACHINE18: cluster=2 tx=28.1 rx=35.9 disk_write=18.8 disk_read=4.7
+        MACHINE19: cluster=3 tx=27.3 rx=35.2 disk_write=18.8 disk_read=4.7
+     RACK5: tx=117.2 rx=141.4
+        MACHINE20: cluster=0 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+        MACHINE21: cluster=1 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE22: cluster=2 tx=28.9 rx=35.9 disk_write=18.8 disk_read=5.5
+        MACHINE23: cluster=3 tx=30.5 rx=35.2 disk_write=18.8 disk_read=7.8
+     RACK6: tx=114.1 rx=141.4
+        MACHINE24: cluster=0 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+        MACHINE25: cluster=1 tx=28.1 rx=35.9 disk_write=18.8 disk_read=4.7
+        MACHINE26: cluster=2 tx=27.3 rx=35.2 disk_write=18.8 disk_read=4.7
+        MACHINE27: cluster=3 tx=30.5 rx=35.2 disk_write=18.8 disk_read=7.8
+     RACK7: tx=115.6 rx=142.2
+        MACHINE28: cluster=0 tx=28.9 rx=35.9 disk_write=18.8 disk_read=5.5
+        MACHINE29: cluster=1 tx=26.6 rx=35.2 disk_write=18.8 disk_read=3.9
+        MACHINE30: cluster=2 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE31: cluster=3 tx=30.5 rx=35.9 disk_write=18.8 disk_read=7.0
+  DC2: tx=468.0 rx=565.6
+     RACK8: tx=117.2 rx=141.4
+        MACHINE32: cluster=0 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+        MACHINE33: cluster=1 tx=29.7 rx=35.9 disk_write=18.8 disk_read=6.2
+        MACHINE34: cluster=2 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+        MACHINE35: cluster=3 tx=31.2 rx=35.2 disk_write=18.8 disk_read=8.6
+     RACK9: tx=117.2 rx=141.4
+        MACHINE36: cluster=0 tx=30.5 rx=35.2 disk_write=18.8 disk_read=7.8
+        MACHINE37: cluster=1 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE38: cluster=2 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE39: cluster=3 tx=27.3 rx=35.9 disk_write=18.8 disk_read=3.9
+     RACK10: tx=118.0 rx=141.4
+        MACHINE40: cluster=0 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE41: cluster=1 tx=30.5 rx=35.9 disk_write=18.8 disk_read=7.0
+        MACHINE42: cluster=2 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE43: cluster=3 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+     RACK11: tx=115.6 rx=141.4
+        MACHINE44: cluster=0 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE45: cluster=1 tx=29.7 rx=35.2 disk_write=18.8 disk_read=7.0
+        MACHINE46: cluster=2 tx=28.1 rx=35.2 disk_write=18.8 disk_read=5.5
+        MACHINE47: cluster=3 tx=28.1 rx=35.9 disk_write=18.8 disk_read=4.7
+</code></pre>
+<p>This tool continues to help us to understand and explain how data moves in our
+datacenters. It was great fun writing this tool (even when I was writing it in
+Google Sheets!). I had forgotten about the story of this tool until a colleague
+and I were discussing the relative ease of debugging some languages over
+others. This was the first project where I found myself using the Python
+debugger.</p>
+<p>I hope that you enjoyed this brief look at a simple solution to a complicated
+problem. If you're curious to see the simulator (and maybe step through it in
+the Python debugger :) ) you can find the code <a href="https://github.com/KodyKantor/kodyops/blob/master/simulators/storage_cluster.py">here</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../2021/rust-statemap.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../2020/minio_tracing.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../2021/rust-statemap.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../2020/minio_tracing.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

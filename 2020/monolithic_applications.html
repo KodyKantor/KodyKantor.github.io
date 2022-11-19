@@ -1,0 +1,271 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js rust">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Monolithic Applications - Kody&#x27;s Blog</title>
+        <!-- Custom HTML head -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-90522412-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-90522412-1');
+</script>        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "rust" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../welcome.html">Welcome</a></li><li class="chapter-item expanded affix "><a href="../2022/tech_debt.html">Enjoying technical debt</a></li><li class="chapter-item expanded affix "><a href="../2021/rust-statemap.html">Statemap library for Rust programs</a></li><li class="chapter-item expanded affix "><a href="../2021/cluster_simulator.html">Cluster Simulator</a></li><li class="chapter-item expanded affix "><a href="../2020/minio_tracing.html">Tracing MinIO and rust-statemap</a></li><li class="chapter-item expanded affix "><a href="../2020/ctp_theorem.html">CTP Theorem for Happiness at Work</a></li><li class="chapter-item expanded affix "><a href="../2020/monolithic_applications.html" class="active">Monolithic Applications</a></li><li class="chapter-item expanded affix "><a href="../2019/zfs_recordsize.html">ZFS Recordsize</a></li><li class="chapter-item expanded affix "><a href="../2019/pg_temp_files.html">Postgres Temporary Files</a></li><li class="chapter-item expanded affix "><a href="../2019/hw_raid_eating_data.html">Hardware RAID is lying to you</a></li><li class="chapter-item expanded affix "><a href="../2018/pg_xlogdump.html">pg_xlogdump(1) - a tale of 15 round trips</a></li><li class="chapter-item expanded affix "><a href="../2017/android_cr.html">Android Checkpoint / Restore</a></li><li class="chapter-item expanded affix "><a href="../2017/dockerbox.html">Dockerbox - Virtual Filesystem</a></li><li class="chapter-item expanded affix "><a href="../2017/two_in_bush.html">Worth Two in the Bush</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Kody&#x27;s Blog</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="monolithic-applications"><a class="header" href="#monolithic-applications">Monolithic applications</a></h1>
+<h4 id="2020-02-01"><a class="header" href="#2020-02-01">2020-02-01</a></h4>
+<p>There has been some <a href="https://thenewstack.io/this-week-in-programming-forget-microservices-monoliths-are-the-way-forward/">recent</a>
+chatter online about monolithic architectures. Of
+course we're all likely aware of the trend from the last few years of trying to
+separate every little piece of an application into its own service. Then
+everyone says we need to put each piece in its own virtual sandbox (but we can't
+care where, that's against the rules).</p>
+<p>After having worked with a service-oriented architecture like this for a few
+years, I can say that there are definitely problems with microservice
+architectures.  I'll outline just a few problems that we've encountered at
+Joyent. I'll later offer tweaks that we can make to a service-oriented
+architecture to hopefully reduce the pain of the problems.</p>
+<p>My experience is coming from working with Joyent's Manta object storage system.
+Manta actually has a very simple architecture, yet we're still having problems
+with the many services we operate. I can't begin to imagine the problems that
+organizations with hundreds of services face.</p>
+<h3 id="problems"><a class="header" href="#problems">Problems</a></h3>
+<p>Latency is generally much worse. The idea of microservices is that each service
+does very little. In order to accomplish anything a number of RPCs (using HTTP
+requests or something similar) have to be sent across a wire to another service
+(which might call a service or two in turn). Each of these hops takes a real
+amount of time. One way you could theoretically reduce the time spent on the
+wire making RPCs is to colocate services so they are only communicating over
+a local socket. Some may argue that leads to treating your services like 'pets'
+and not 'cattle.'</p>
+<p>It's hard to observe a microservice application. There has been a lot of work
+across the industry trying to solve this problem. The numerous 'service mesh'
+software, distributed tracing, Prometheus and co., and monitoring provided by
+the compute platform itself. These environments are generally dynamic. Maybe
+one RPC went to instance0 of service0, but the second RPC went to instance9 of
+service0. Correlating an end-user's request failure with one of these RPCs can
+be a herculean task.</p>
+<p>Swapping out services is not as easy as advertised. One of the advertised
+benefits of microservice architectures is that it's easy to swap out
+implementations of a service since the implementation is abstracted by an API.
+But what if the API is garbage? Have you ever written a perfect API the first
+time? In my experience we've wanted to swap the API more than the rest of the
+service. Dealing with changing APIs (especially remote APIs) is extremely
+difficult, and made more difficult by the myriad possible consumers of said API.</p>
+<h3 id="solutions"><a class="header" href="#solutions">Solutions</a></h3>
+<p>The core of these problems can likely be solved by combining everything into a
+single service. You might even be able to get away with sticking your entire
+application into a single binary. Heck, the Minio folks did it, why can't you?</p>
+<p>With everything in a single binary, we know that wire latency is not a factor.
+We don't have to worry about availability zones, each like request will probably
+take the same amount of time as the last. We don't have to think about one RPC
+hitting a colocated service and the next hitting a service in the next
+datacenter.</p>
+<p>Observability could be a wash. Sure it's easier to reason about how an
+application works, but it may be harder for many folks to debug the application.
+Without good observability tools like DTrace and mdb, some may still struggle
+to find out how an application works. Systems like Prometheus would still be
+valuable in a monolithic world (but labels would be more important to separate
+the logical bounds of some operations).</p>
+<p>Swapping out services is where I think a monolithic architecture really shines.
+This may be a surprise. In a monolithic architecture the compiler makes sure
+that any API change is handled by all consumers. Breaking changes can be made
+whenever we want because updating one service means every service is updated
+simultaneously. There is no need to maintain backward compat if we can update
+every service at once.</p>
+<h3 id="a-compromise"><a class="header" href="#a-compromise">A compromise</a></h3>
+<p>Obviously purely monolithic applications have their drawbacks. In my experience
+at Veritas with their (mostly) monolithic systems, a monolith leads to fear.
+The organization imposes boundaries on the software so that Team X is only
+allowed to touch corners A and C of the code. If Team X wants to touch B, they
+have to talk to the architect for B.</p>
+<p>Leaning on the compiler to enforce breaking changes are addressed doesn't scale.
+What if your team is in charge of the lone database service and wants to change
+an API? All of that code from 30 years ago that depends on the existing API now
+needs to be changed. Just your luck, there is still one person who still knows
+how that code works. He was an intern when the code was written!</p>
+<p>What if we designed a service-oriented architecture but deployed it like a
+monolith? Let's combine services where we can, and then deploy the entire thing
+in one package. No network calls (except maybe to a database and long term
+storage or whatever other shared resources your system necessitates) and much
+easier upgrades (just update a single container or VM). We still don't have to
+deal with garbage like backward compat HTTP APIs, but the compiler won't help
+us either. It's a compromise.</p>
+<p>Amazon and other *aaS providers are the winners in a microservice world. They
+provide the most critical services for your applications, like persistent
+storage and a scale-out database, and generously allow you to build the glue
+necessary to get your customer data into the AWS system. But sometimes they will
+provide the glue for you as well so all you need to do is hire 'full stack'
+developers to write a UI and DAL.</p>
+<p>This post has now resurrected my rage when I hear the title 'full stack
+developer.'</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../2020/ctp_theorem.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../2019/zfs_recordsize.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../2020/ctp_theorem.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../2019/zfs_recordsize.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

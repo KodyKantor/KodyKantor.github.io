@@ -1,0 +1,310 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js rust">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>pg_xlogdump(1) - a tale of 15 round trips - Kody&#x27;s Blog</title>
+        <!-- Custom HTML head -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-90522412-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-90522412-1');
+</script>        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "rust" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../welcome.html">Welcome</a></li><li class="chapter-item expanded affix "><a href="../2022/tech_debt.html">Enjoying technical debt</a></li><li class="chapter-item expanded affix "><a href="../2021/rust-statemap.html">Statemap library for Rust programs</a></li><li class="chapter-item expanded affix "><a href="../2021/cluster_simulator.html">Cluster Simulator</a></li><li class="chapter-item expanded affix "><a href="../2020/minio_tracing.html">Tracing MinIO and rust-statemap</a></li><li class="chapter-item expanded affix "><a href="../2020/ctp_theorem.html">CTP Theorem for Happiness at Work</a></li><li class="chapter-item expanded affix "><a href="../2020/monolithic_applications.html">Monolithic Applications</a></li><li class="chapter-item expanded affix "><a href="../2019/zfs_recordsize.html">ZFS Recordsize</a></li><li class="chapter-item expanded affix "><a href="../2019/pg_temp_files.html">Postgres Temporary Files</a></li><li class="chapter-item expanded affix "><a href="../2019/hw_raid_eating_data.html">Hardware RAID is lying to you</a></li><li class="chapter-item expanded affix "><a href="../2018/pg_xlogdump.html" class="active">pg_xlogdump(1) - a tale of 15 round trips</a></li><li class="chapter-item expanded affix "><a href="../2017/android_cr.html">Android Checkpoint / Restore</a></li><li class="chapter-item expanded affix "><a href="../2017/dockerbox.html">Dockerbox - Virtual Filesystem</a></li><li class="chapter-item expanded affix "><a href="../2017/two_in_bush.html">Worth Two in the Bush</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Kody&#x27;s Blog</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="pg_xlogdump1---a-tale-of-15-round-trips"><a class="header" href="#pg_xlogdump1---a-tale-of-15-round-trips">pg_xlogdump(1) - a tale of 15 round trips</a></h1>
+<h4 id="2018-11-12"><a class="header" href="#2018-11-12">2018-11-12</a></h4>
+<p>In the last year I've been spending more time using DTrace, MDB, and other tools
+to observe and debug systems. I thought I'd write down some of the interesting
+things I've written or discovered.</p>
+<h2 id="exploring-postgres"><a class="header" href="#exploring-postgres">Exploring Postgres</a></h2>
+<p><code>pg_xlogdump</code> (<code>pg_waldump</code> for those of us in the PG 10+ future - not me) is a
+really powerful tool that dumps out the contents of the Postgres write ahead log
+files. This can be used for all sorts of data wrangling, although from my
+limited time with the tool I didn't see any directly machine-parseable output.</p>
+<p>pg_xlogdump was
+<a href="https://paquier.xyz/postgresql-2/postgres-9-3-feature-highlight-pg_xlogdump/">added</a>
+in PG 9.3 as a 'contrib' add-on. Before this there were a few things floating
+around that had similar functionality but they were maintained outside of
+Postgres.</p>
+<p>Renaming pg_xlogdump to pg_waldump was done with a slew of other renames in PG
+10. Why would that be? Because people were deleting directories in the PG
+portion of their filesystem that had the word 'log' in them (why is this log
+stuff taking all of my IOPS?!?! - famous last words of a frustrated sysadmin).
+Some background on these changes are here:
+<a href="https://www.postgresql.org/message-id/flat/CAASwCXcVGma9KgEu-ESC6u928mW67noZvnawbPUSW7R7AN9UVg%40mail.gmail.com">original post</a>,
+<a href="https://www.postgresql.org/message-id/flat/CAB7nPqTeC-8%2Bzux8_-4ZD46V7YPwooeFxgndfsq5Rg8ibLVm1A%40mail.gmail.com">implementation discussion</a>.
+Here's a <a href="https://wiki.postgresql.org/wiki/New_in_postgres_10#Renaming_of_.22xlog.22_to_.22wal.22_Globally_.28and_location.2Flsn.29">summary</a> of changes.</p>
+<p>So the skinny of it is that people were deleting anything in the Postgres data
+directories that had the word 'log' in them. This was probably an uninformed
+decision on the part of the operator(s), but Michael Paquier did point out that
+the original names of things weren't very indicative of what their function was
+(e.g. pg_xlog isn't as self-explanatory as pg_wal).</p>
+<p>Anyway, a tool like pg_xlogdump is most interesting with an example.
+The pg_xlogdump tool can be given the name of a WAL file and it will dump
+somewhat human-readable output to the console. That's a little verbose for us,
+so we'll look at a single transaction. This is an INSERT into the 'manta' table
+of a development deployment of Joyent's Manta service:</p>
+<pre><code>[root@cf90e54c (postgres) /manatee/pg/data/pg_xlog]$ pg_xlogdump 00000001000004210000007B -x 1592894815
+rmgr: Heap        len (rec/tot):      3/   751, tx: 1592894815, lsn: 421/7BFF9B60, prev 421/7BFF9A98, desc: INSERT off 1, blkref #0: rel 1663/16385/18650 blk 8455231
+rmgr: Btree       len (rec/tot):      2/   160, tx: 1592894815, lsn: 421/7BFFA1F8, prev 421/7BFF9EF0, desc: INSERT_LEAF off 28, blkref #0: rel 1663/16385/57453 blk 16791519
+rmgr: Btree       len (rec/tot):      2/    96, tx: 1592894815, lsn: 421/7BFFE120, prev 421/7BFFE0D8, desc: INSERT_LEAF off 56, blkref #0: rel 1663/16385/57454 blk 5182563
+rmgr: Btree       len (rec/tot):      2/    96, tx: 1592894815, lsn: 421/7BFFE180, prev 421/7BFFE120, desc: INSERT_LEAF off 2, blkref #0: rel 1663/16385/57455 blk 8753025
+rmgr: Btree       len (rec/tot):      2/    72, tx: 1592894815, lsn: 421/7BFFE1E0, prev 421/7BFFE180, desc: INSERT_LEAF off 2, blkref #0: rel 1663/16385/57457 blk 3984299
+rmgr: Btree       len (rec/tot):      2/    72, tx: 1592894815, lsn: 421/7BFFE330, prev 421/7BFFE2B0, desc: INSERT_LEAF off 202, blkref #0: rel 1663/16385/57459 blk 1466454
+rmgr: Btree       len (rec/tot):      2/    64, tx: 1592894815, lsn: 421/7BFFE378, prev 421/7BFFE330, desc: INSERT_LEAF off 81, blkref #0: rel 1663/16385/57460 blk 3291661
+rmgr: Btree       len (rec/tot):      2/   128, tx: 1592894815, lsn: 421/7BFFE3F8, prev 421/7BFFE3B8, desc: INSERT_LEAF off 59, blkref #0: rel 1663/16385/57462 blk 13931439
+rmgr: Btree       len (rec/tot):      2/    64, tx: 1592894815, lsn: 421/7BFFE478, prev 421/7BFFE3F8, desc: INSERT_LEAF off 241, blkref #0: rel 1663/16385/57463 blk 230841
+rmgr: Transaction len (rec/tot):     20/    46, tx: 1592894815, lsn: 421/7BFFFA08, prev 421/7BFFF9C8, desc: COMMIT 2018-11-13 03:19:43.829708 UTC; subxacts: 1592894828
+
+[root@cf90e54c (postgres) /manatee/pg/data/pg_xlog]$ pg_xlogdump 00000001000004210000007B -x 1592894828
+rmgr: Heap        len (rec/tot):      3/   164, tx: 1592894828, lsn: 421/7BFFE4B8, prev 421/7BFFE478, desc: INSERT off 46, blkref #0: rel 1663/16385/18641 blk 10606796
+rmgr: Btree       len (rec/tot):      2/   128, tx: 1592894828, lsn: 421/7BFFE560, prev 421/7BFFE4B8, desc: INSERT_LEAF off 31, blkref #0: rel 1663/16385/18643 blk 12515860
+rmgr: Btree       len (rec/tot):      2/    64, tx: 1592894828, lsn: 421/7BFFE5E0, prev 421/7BFFE560, desc: INSERT_LEAF off 196, blkref #0: rel 1663/16385/90112 blk 1614613
+rmgr: Btree       len (rec/tot):      2/    72, tx: 1592894828, lsn: 421/7BFFE620, prev 421/7BFFE5E0, desc: INSERT_LEAF off 2, blkref #0: rel 1663/16385/98305 blk 1
+rmgr: Btree       len (rec/tot):      2/    64, tx: 1592894828, lsn: 421/7BFFE668, prev 421/7BFFE620, desc: INSERT_LEAF off 292, blkref #0: rel 1663/16385/98304 blk 1614518
+</code></pre>
+<p>This command looked at the xlog
+<code>00000001000004210000007B</code> for XID <code>1592894815</code>. The first line (<code>Heap</code>) denotes
+the data being recorded. The next eight lines are all index data being modified.
+The final line is the transaction being committed. Note that it references
+a <code>subxact</code>, which I also pasted.</p>
+<p>The <code>len (rec/tot)</code> section I take to represent the total length of data being
+recorded. I'm not sure what the <code>rec</code> field means. Then we can see the
+transaction number (what we queried on), and a pair of LSNs. The LSN type was
+first-classed in PG 9.4 and is a monotonically incrementing number behind the
+scenes. The <code>lsn</code> in the above output is the logical sequence number assigned
+to each of the WAL segments. The <code>prev</code> LSN is the LSN of the previously written
+WAL segment. I believe this is used in the case that the WAL has to be replayed.
+So this facility would ensure that the segments are replayed in sequence in the
+case that entries in the file are moved around.</p>
+<p>The <code>desc</code> section denotes what type of operation happened. INSERT_LEAF means
+data needs to be added to the index's btree for example. The next interesting
+bit that I somewhat understand is <code>rel</code> which explains what's being modified.</p>
+<p>Take the first line of the first dump:</p>
+<pre><code>rel 1663/16385/18650
+</code></pre>
+<p>Here 1663 represents the 'base' tablespace, 16385 is the 'moray' database, and
+18650 is the 'manta' relation.</p>
+<p>I started from the bottom:</p>
+<pre><code>moray=# select relname from pg_class where relfilenode = 18650;
+ relname
+---------
+ manta
+(1 row)
+
+moray=# select datname from pg_database where oid = 16385;
+ datname
+---------
+ moray
+(1 row)
+
+moray=# select pg_relation_filepath('manta');
+ pg_relation_filepath
+----------------------
+ base/16385/18650
+(1 row)
+</code></pre>
+<p>And then we can do the same for the subtransaction:</p>
+<pre><code>moray=# select relname from pg_class where relfilenode = 18641;
+        relname
+------------------------
+ manta_directory_counts
+(1 row)
+</code></pre>
+<p>Now we know that this series of WAL records represents an INSERT into the
+'manta' table, how much data was written, in what order, and that it (correctly)
+kicked off a trigger to update manta_directory_counts.</p>
+<p>I should also note that pg_xlogdump will indicate if a write was a full-page
+write, which is important for some performance investigations.</p>
+<p>This was just one small example of what we can learn from the PG WAL using
+pg_xlogdump. You could conceivably graph a lot of this data over time and draw
+interesting conclusions from it.</p>
+<p>The takeaways here:</p>
+<ul>
+<li>Every individual data modification uses an LSN, grabs a WAL writer lock, and
+results in a round-trip to the synchronous replica (with varying levels of
+consistency based on how you configured your database).</li>
+<li>One logical insert into the 'manta' table resulted in 15 round trips to
+the PG replica and 2041 (logical) bytes of data written to WAL, 1080 of which
+was index data.</li>
+<li>There's a ton of data in the WAL.</li>
+<li>Understanding the WAL can be a great asset when developing new PG schemas.</li>
+</ul>
+<p>The existing 'manta' schema isn't the best when it comes to improving latency
+and throughput, and minimizing storage usage. If the schema had more
+heap-only-tuple updates (HOT updates), the latency of inserts would be greatly
+reduced. Note that the manta_directory_counts relation sometimes has HOT updates
+due to the limited number of indexes it maintains.</p>
+<p>I hope this was interesting! It was nice for me to go back and record this
+despite not having touched pg_xlogdump (or my blog!) for many months now.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../2019/hw_raid_eating_data.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../2017/android_cr.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../2019/hw_raid_eating_data.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../2017/android_cr.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

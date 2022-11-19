@@ -1,0 +1,366 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js rust">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Postgres Temporary Files - Kody&#x27;s Blog</title>
+        <!-- Custom HTML head -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-90522412-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-90522412-1');
+</script>        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "rust" : "rust";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../welcome.html">Welcome</a></li><li class="chapter-item expanded affix "><a href="../2022/tech_debt.html">Enjoying technical debt</a></li><li class="chapter-item expanded affix "><a href="../2021/rust-statemap.html">Statemap library for Rust programs</a></li><li class="chapter-item expanded affix "><a href="../2021/cluster_simulator.html">Cluster Simulator</a></li><li class="chapter-item expanded affix "><a href="../2020/minio_tracing.html">Tracing MinIO and rust-statemap</a></li><li class="chapter-item expanded affix "><a href="../2020/ctp_theorem.html">CTP Theorem for Happiness at Work</a></li><li class="chapter-item expanded affix "><a href="../2020/monolithic_applications.html">Monolithic Applications</a></li><li class="chapter-item expanded affix "><a href="../2019/zfs_recordsize.html">ZFS Recordsize</a></li><li class="chapter-item expanded affix "><a href="../2019/pg_temp_files.html" class="active">Postgres Temporary Files</a></li><li class="chapter-item expanded affix "><a href="../2019/hw_raid_eating_data.html">Hardware RAID is lying to you</a></li><li class="chapter-item expanded affix "><a href="../2018/pg_xlogdump.html">pg_xlogdump(1) - a tale of 15 round trips</a></li><li class="chapter-item expanded affix "><a href="../2017/android_cr.html">Android Checkpoint / Restore</a></li><li class="chapter-item expanded affix "><a href="../2017/dockerbox.html">Dockerbox - Virtual Filesystem</a></li><li class="chapter-item expanded affix "><a href="../2017/two_in_bush.html">Worth Two in the Bush</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Kody&#x27;s Blog</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="postgres-temporary-files"><a class="header" href="#postgres-temporary-files">Postgres Temporary Files</a></h1>
+<h4 id="2019-03-18"><a class="header" href="#2019-03-18">2019-03-18</a></h4>
+<p>Today someone reported that our Postgres dashboard in Grafana was very choppy.
+Prometheus is supposed to go out and scrape our pgstatsmon targets every minute.
+There are three pgstatsmon targets in each region - one in each datacenter.</p>
+<p>It turned out that the problem (as usual) was in Prometheus. Our Prometheus
+instance was running out of memory and falling behind scraping targets.
+However, since I was already logged into production I began looking at our
+pgstatsmon instances to see if there were any problems with them.</p>
+<p>Another person earlier mentioned that pgstatsmon was throwing occasional query
+timeout and connection errors. pgstatsmon ships with a few simple DTrace scripts
+just for situations like these.</p>
+<p>In our first and second datacenters everything was clean. pgstatsmon had
+connections to all 97 Postgres backends, and there were no operational errors
+(query timeouts, connection errors) or programmer errors (query errors, NaN
+errors). Our last datacenter was reporting an error connecting to a Postgres
+backend. I logged into that backend's zone and saw that it was a deposed peer
+(a former primary that had failed):</p>
+<pre><code>[root@aa7ab002 (postgres) ~]$ manatee-adm show
+zookeeper:   zk_addr
+cluster:     57.moray
+generation:  8 (3DB0/AC7F6A78)
+mode:        normal
+freeze:      not frozen
+
+ROLE     PEER     PG   REPL  SENT          FLUSH         REPLAY        LAG
+primary  4dc75e3f ok   sync  3DB1/CBE280   3DB1/CBE0F0   3DB1/CB3668   -
+sync     b3aa6bb1 ok   -     -             -             -             0m00s
+deposed  aa7ab002 ok   -     -             -             -             -
+
+warning: cluster has a deposed peer
+warning: cluster has no async peers
+</code></pre>
+<p>So that wasn't pgstatsmon's fault, but something that we should investigate
+later. This explains the latent connection errors that were reported.</p>
+<p>While looking into this I had left the other pgstatsmon DTrace scripts running.
+In the intervening time the other pgstatsmon instances reported a number of
+query timeouts to a few shards. Digging deeper with another DTrace script, this
+is what we see:</p>
+<pre><code>36.postgres.my.domain-090930c5
+               QUERY      LAT QTIM QERR  NaN
+ pg_stat_user_tables      469    0    0    0
+pg_statio_user_tables     487    0    0    0
+pg_statio_user_indexes    496    0    0    0
+ pg_stat_replication      509    0    0    0
+         pg_recovery      511    0    0    0
+    pg_stat_activity      517    0    0    0
+    pg_stat_database     1001    1    0    0
+    pg_relation_size     1002    1    0    0
+    pg_stat_bgwriter     1002    1    0    0
+pg_stat_progress_vacuum  1003    1    0    0
+           pg_vacuum     1003    1    0    0
+</code></pre>
+<p>The columns are:</p>
+<ul>
+<li>QUERY: the 'name' of the query. Usually this refers to the primary
+data sourcewhere pgstatsmon gets its data.</li>
+<li>LAT: cumulative latency for queries to this backend.</li>
+<li>QTIM: 1 if the query timed out.</li>
+<li>QERR: 1 if an error was returned from Postgres.</li>
+<li>NaN: 1 if the data returned was a NaN type in Javascript.</li>
+</ul>
+<p>Right off the bat, these queries should all finish in less than 300ms. The first
+query usually takes about 20ms. pgstatsmon timed out the queries after they took
+1s of cumulative time. But why were these queries taking so long? I logged in to
+the Postgres instance to investigate.</p>
+<p>The first thing I looked at in the Postgres zone was its log file. It didn't
+take long to find a potential problem.</p>
+<pre><code>2019-03-18 19:32:45 UTC LOG:  temporary file: path &quot;base/pgsql_tmp/pgsql_tmp85092.468&quot;, size 1018377378
+2019-03-18 19:32:45 UTC STATEMENT:  SELECT *, '916f7bc4-8e55-647c-8a16-96a48c4895ec' AS req_id FROM manta_fastdelete_queue WHERE  ( $1 &lt;= _mtime AND _mtime IS NOT NULL )  LIMIT 3500 OFFSET 7000
+</code></pre>
+<p>manta_fastdelete_queue is a Postgres relation that we use to store information
+about files ready for deletion. This is part of relatively new 'accelerated GC'
+code in Manta. The accelerated GC code is the only code that should be touching
+this table, and it is not expected that queries should be creating temporary
+files.</p>
+<p>Next I looked at the temp files on disk to see how many and how large they were:</p>
+<pre><code>[root@090930c5 (postgres) ~]$ ls -lh /manatee/pg/data/base/pgsql_tmp/
+total 6.1G
+-rw------- 1 postgres root 1.0G Mar 18 19:51 pgsql_tmp85093.501
+-rw------- 1 postgres root 1.0G Mar 18 19:51 pgsql_tmp85093.502
+-rw------- 1 postgres root 1.0G Mar 18 19:51 pgsql_tmp85093.503
+-rw------- 1 postgres root 1.0G Mar 18 19:51 pgsql_tmp85093.504
+-rw------- 1 postgres root 1.0G Mar 18 19:52 pgsql_tmp85093.505
+-rw------- 1 postgres root 972M Mar 18 19:52 pgsql_tmp85093.506
+-rw------- 1 postgres root 1.0G Mar 18 19:51 pgsql_tmp85161.506
+-rw------- 1 postgres root 1.0G Mar 18 19:51 pgsql_tmp85161.507
+-rw------- 1 postgres root 1.0G Mar 18 19:51 pgsql_tmp85161.508
+-rw------- 1 postgres root 1.0G Mar 18 19:51 pgsql_tmp85161.509
+-rw------- 1 postgres root 1.0G Mar 18 19:52 pgsql_tmp85161.510
+-rw------- 1 postgres root 972M Mar 18 19:52 pgsql_tmp85161.511
+</code></pre>
+<p>That's unfortunate. An interesting observation - 'ls' reports 6.1G at the top
+level, but there are about 12 1GB files in the listing... I also
+verified that these queries were showing up in pg_stat_activity.</p>
+<p>The Postgres docs on LIMIT and OFFSET note that the OFFSET has to be computed by
+the server and may cause performance problems. Looking at the EXPLAIN of the
+query being used gives us some answers:</p>
+<pre><code>moray=&gt; explain SELECT * FROM manta_fastdelete_queue WHERE  ( 1000 &lt;= _mtime AND _mtime IS NOT NULL )  LIMIT 3500 OFFSET 3500;
+                                        QUERY PLAN
+-------------------------------------------------------------------------------------------
+ Limit  (cost=1210.85..2421.70 rows=3500 width=1410)
+   -&gt;  Seq Scan on manta_fastdelete_queue  (cost=0.00..1551769.54 rows=4485435 width=1410)
+         Filter: ((_mtime IS NOT NULL) AND (1000 &lt;= _mtime))
+(3 rows)
+</code></pre>
+<p>That tells us that this query is most likely going to try to scan the entire
+manta_fastdelete_queue table. This is probably why we're hitting work_mem and
+making temporary files.</p>
+<p>It also begs another question. Why didn't it list anything about <code>OFFSET</code> or
+<code>LIMIT</code> in the output?</p>
+<p>Based on what I've seen my theory is that the <code>OFFSET</code> directive is causing the
+backend process to buffer much of the table in memory to compute the <code>OFFSET</code>.
+Our work_mem is set to a measly 3MB (which has never led to this problem in the
+past) and this relation on disk is about 12GB:</p>
+<pre><code>[root@090930c5 (postgres) ~]$ ls -lh /manatee/pg/data/base/16385/74462*
+-rw------- 1 postgres root 1.0G Mar 18 20:40 /manatee/pg/data/base/16385/74462
+-rw------- 1 postgres root 1.0G Mar 18 20:43 /manatee/pg/data/base/16385/74462.1
+-rw------- 1 postgres root 1.0G Mar 18 19:41 /manatee/pg/data/base/16385/74462.10
+-rw------- 1 postgres root 422M Mar 18 19:50 /manatee/pg/data/base/16385/74462.11
+-rw------- 1 postgres root 1.0G Mar 18 20:53 /manatee/pg/data/base/16385/74462.2
+-rw------- 1 postgres root 1.0G Mar 18 21:03 /manatee/pg/data/base/16385/74462.3
+-rw------- 1 postgres root 1.0G Mar 18 20:50 /manatee/pg/data/base/16385/74462.4
+-rw------- 1 postgres root 1.0G Mar 18 21:10 /manatee/pg/data/base/16385/74462.5
+-rw------- 1 postgres root 1.0G Mar 18 21:10 /manatee/pg/data/base/16385/74462.6
+-rw------- 1 postgres root 1.0G Mar 18 20:09 /manatee/pg/data/base/16385/74462.7
+-rw------- 1 postgres root 1.0G Mar 18 20:32 /manatee/pg/data/base/16385/74462.8
+-rw------- 1 postgres root 1.0G Mar 18 19:39 /manatee/pg/data/base/16385/74462.9
+</code></pre>
+<h3 id="june-update"><a class="header" href="#june-update">June Update</a></h3>
+<p>It appears that I was on to something deeper here. I was looking at another
+system during a recent trip to Korea and noticed that there were some queries
+blocking on the WALWriteLock. The WALWriteLock is infamous for being on the
+scene during Postgres performance issues. It needs to be acquired whenever a
+record is inserted into the WAL. IIUC this happens whenever a transaction
+modifies table data.</p>
+<p>I took a <a href="https://github.com/joyent/statemap">statemap</a> of the system I was
+looking at. These are the things I observed:</p>
+<ul>
+<li>Multiple processes blocking on locks (presumably WALWriteLock)</li>
+<li>A few processes spending <em>way</em> too much time in zil_commit</li>
+</ul>
+<p>I then used DTrace to track zil_commit latencies, and the results were damning.
+Some zil_commits were taking over 200ms! Since zil_commit is how ZFS implements
+fsync it's no wonder things were performing pathologically.</p>
+<p>My coworker Jerry was able to pretty quickly determine that the zil_commit ZIOs
+were getting delayed in the ZIO pipeline, which was causing much of the latency.</p>
+<p>I also wrote a <a href="https://github.com/KodyKantor/kodyops/blob/master/simulators/zfs_usage_simulator.sh">complicated DTrace</a> script (and found a DTrace bug on the way!)
+to track where ZIOs are spending time in the ZIO pipeline.
+It's a riff on an 'extended' DTrace script that George Wilson presented at
+the 2018 OpenZFS Summit. My version is a little more complicated, since it only
+prints pipelines that are over a given time threshold (in your time unit of
+choice) and also calculates time the ZIO spent waiting (not being executed).</p>
+<p>The result of running my zio.d script is this:</p>
+<pre><code>	[65532ns] zil_lwb_write_issue
+	[20317ns] zio_write_bp_init
+	[27606ns] wait
+	[15031ns] zio_issue_async
+	[16879ns] wait
+	[11901ns] zio_write_compress
+	[11568ns] wait
+	[13422ns] zio_checksum_generate
+	[12041ns] wait
+	[10437ns] zio_ready
+	[11355ns] wait
+	[27992ns] zio_vdev_io_start
+	[25709ns] wait
+	[9557ns] zio_vdev_io_done
+	[314426ns] wait
+	[13820ns] zio_vdev_io_done
+	[8677ns] wait
+	[18070ns] zio_vdev_io_assess
+	[17351ns] wait
+	[81714ns] zio_done
+	[10576ns] wait
+	[743981ns] DTrace calculated duration
+	[664521ns] ZIO reported duration
+</code></pre>
+<p>Pretty useful!</p>
+<p>In the end we discovered that the ZFS bug we were encountering had been fixed
+a few months ago (illumos#9993 fixed in Nov 2018), which was caused by commit
+illumos#19097 - &quot;zfs i/o scheduler needs some work.&quot;</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../2019/zfs_recordsize.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../2019/hw_raid_eating_data.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../2019/zfs_recordsize.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../2019/hw_raid_eating_data.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>
